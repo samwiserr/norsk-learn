@@ -1,0 +1,15 @@
+/* Responsive styles for LanguageSelectorLanding component */
+@media (max-width: 1200px) {
+  .language-selector-landing .language-selector-trigger {
+    padding: 9px 16px !important;
+    font-size: clamp(11px, 1.2vw + 0.5rem, 13px) !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .language-selector-landing .language-selector-trigger {
+    padding: 8px 14px !important;
+    font-size: clamp(11px, 1.1vw + 0.5rem, 12px) !important;
+  }
+}
+

@@ -1,0 +1,142 @@
+.session-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 400;
+  position: relative;
+  letter-spacing: -0.15px;
+}
+
+.session-item:hover {
+  background-color: #f3f4f6;
+}
+
+.session-item.active {
+  background-color: #e0e7ff;
+  color: #667eea;
+  font-weight: 500;
+}
+
+.session-title {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+  line-height: 1.4;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.session-menu-container {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.session-menu-button {
+  opacity: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: opacity 0.2s, background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.session-item:hover .session-menu-button {
+  opacity: 1;
+}
+
+.session-item.active .session-menu-button {
+  opacity: 1;
+}
+
+.session-menu-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: #374151;
+}
+
+.session-item.active .session-menu-button:hover {
+  background-color: rgba(102, 126, 234, 0.1);
+  color: #667eea;
+}
+
+.session-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 160px;
+  z-index: 100;
+  overflow: hidden;
+  animation: fadeIn 0.15s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.session-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 400;
+  color: #374151;
+  text-align: left;
+  transition: background-color 0.15s;
+  white-space: nowrap;
+  letter-spacing: -0.15px;
+}
+
+.session-menu-item:hover {
+  background-color: #f3f4f6;
+}
+
+.session-menu-item svg {
+  flex-shrink: 0;
+  stroke-width: 2;
+}
+
+.session-menu-item-danger {
+  color: #dc2626;
+}
+
+.session-menu-item-danger:hover {
+  background-color: #fee2e2;
+}
+
+.session-menu-item span {
+  flex: 1;
+}
