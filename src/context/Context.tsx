@@ -46,7 +46,7 @@ import { getMultiTabSync } from "@/lib/sync/multi-tab-sync";
 import { AppError, ErrorType, createAppError, getErrorMessage } from "@/lib/error-handling";
 import { withRetry, isRetryableError } from "@/lib/retry";
 
-interface ContextValue {
+export interface ContextValue {
   cefrLevel: CEFRLevel | null;
   setCefrLevel: (level: CEFRLevel) => void;
   language: LanguageCode;
