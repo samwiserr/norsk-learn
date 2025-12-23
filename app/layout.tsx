@@ -1,6 +1,6 @@
 import "./globals.css";
 import type { ReactNode } from "react";
-import ContextProvider from "@/src/context/Context";
+import ContextProvider from "@/src/context/ContextProvider";
 import { AuthProvider } from "@/src/context/AuthContext";
 import AppErrorBoundary from "@/src/components/AppErrorBoundary";
 import { Inter } from "next/font/google";
