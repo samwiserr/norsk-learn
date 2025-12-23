@@ -1,0 +1,15 @@
+.session-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.session-empty {
+  color: #9ca3af;
+  font-size: 13px;
+  font-weight: 400;
+  margin: 12px;
+  text-align: center;
+  padding: 20px;
+  letter-spacing: -0.1px;
+}

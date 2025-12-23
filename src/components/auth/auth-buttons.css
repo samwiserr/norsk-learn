@@ -1,0 +1,130 @@
+.auth-buttons-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.auth-button {
+  padding: 10px 20px;
+  border-radius: 24px;
+  font-size: clamp(12px, 1.3vw + 0.5rem, 14px);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  font-family: inherit;
+  line-height: 1.5;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  min-width: fit-content;
+  max-width: 100%;
+}
+
+.login-button {
+  background-color: #fff;
+  color: #1a1a1a;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.login-button:hover {
+  background-color: #f8f8f8;
+  border-color: rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+.signup-button {
+  background-color: #fff;
+  color: #1a1a1a;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.signup-button:hover {
+  background-color: #f8f8f8;
+  border-color: rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+.account-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: transparent;
+  color: inherit;
+  padding: 6px 12px;
+}
+
+.account-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.user-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.user-initial {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #007bff;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.account-text {
+  font-size: 14px;
+}
+
+[data-theme="dark"] .login-button {
+  background-color: #fff;
+  color: #000;
+}
+
+[data-theme="dark"] .login-button:hover {
+  background-color: #e0e0e0;
+}
+
+[data-theme="dark"] .signup-button {
+  background-color: #1a1a1a;
+  color: #fff;
+  border-color: #333;
+}
+
+[data-theme="dark"] .signup-button:hover {
+  background-color: #2a2a2a;
+  border-color: #444;
+}
+
+[data-theme="dark"] .account-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive adjustments for medium screens to prevent text overlap */
+@media (max-width: 1200px) {
+  .auth-button {
+    padding: 9px 16px;
+    font-size: clamp(11px, 1.2vw + 0.5rem, 13px);
+  }
+  
+  .signup-button {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 900px) {
+  .auth-button {
+    padding: 8px 14px;
+    font-size: clamp(11px, 1.1vw + 0.5rem, 12px);
+  }
+}
+

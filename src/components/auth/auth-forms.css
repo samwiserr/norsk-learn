@@ -1,0 +1,135 @@
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-color, #333);
+}
+
+.form-group input {
+  padding: 12px 16px;
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  background-color: var(--bg-color, #fff);
+  color: var(--text-color, #000);
+  transition: all 0.2s;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.form-group input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.form-hint {
+  font-size: 12px;
+  color: var(--text-secondary, #666);
+  margin-top: -4px;
+}
+
+.form-error {
+  padding: 12px;
+  background-color: #fee;
+  border: 1px solid #fcc;
+  border-radius: 8px;
+  color: #c33;
+  font-size: 14px;
+}
+
+[data-theme="dark"] .form-error {
+  background-color: #3a1f1f;
+  border-color: #5a2f2f;
+  color: #ff6b6b;
+}
+
+.auth-submit-button {
+  padding: 12px 24px;
+  background-color: #000;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.auth-submit-button:hover:not(:disabled) {
+  background-color: #333;
+}
+
+.auth-submit-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+[data-theme="dark"] .auth-submit-button {
+  background-color: #fff;
+  color: #000;
+}
+
+[data-theme="dark"] .auth-submit-button:hover:not(:disabled) {
+  background-color: #e0e0e0;
+}
+
+.google-signin-button {
+  width: 100%;
+  padding: 12px 24px;
+  background-color: #fff;
+  color: #333;
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.google-signin-button:hover:not(:disabled) {
+  background-color: #f5f5f5;
+  border-color: #ccc;
+}
+
+.google-signin-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.google-icon {
+  flex-shrink: 0;
+}
+
+[data-theme="dark"] .google-signin-button {
+  background-color: #1a1a1a;
+  color: #fff;
+  border-color: #333;
+}
+
+[data-theme="dark"] .google-signin-button:hover:not(:disabled) {
+  background-color: #2a2a2a;
+  border-color: #444;
+}
+

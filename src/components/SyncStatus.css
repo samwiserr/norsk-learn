@@ -1,0 +1,53 @@
+.sync-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-color-secondary, #6b7280);
+}
+
+.sync-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.sync-indicator svg {
+  flex-shrink: 0;
+}
+
+.sync-indicator.syncing {
+  color: #3b82f6;
+}
+
+.sync-indicator.error {
+  color: #ef4444;
+}
+
+.sync-indicator.pending {
+  color: #f59e0b;
+}
+
+/* Dark mode */
+[data-theme="dark"] .sync-status {
+  color: var(--text-color-secondary, #9ca3af);
+}
+
+[data-theme="dark"] .sync-indicator.syncing {
+  color: #60a5fa;
+}
+
+[data-theme="dark"] .sync-indicator.error {
+  color: #f87171;
+}
+
+[data-theme="dark"] .sync-indicator.pending {
+  color: #fbbf24;
+}
+
