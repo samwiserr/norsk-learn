@@ -31,3 +31,6 @@ git push -u origin main
 gh repo create norsk-learn --public --source=. --remote=origin --push
 ```
 
+
+
+

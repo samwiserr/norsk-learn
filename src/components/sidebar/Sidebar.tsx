@@ -3,11 +3,11 @@
 import "./sidebar.css";
 import { assets } from "@/src/assets/assets";
 import Image from "next/image";
-import { useContext } from "react";
-import { Context } from "@/src/context/Context";
+import { useSessionContext } from "@/src/context/SessionContext";
+import { useLanguageContext } from "@/src/context/LanguageContext";
 import SessionList from "@/src/components/SessionList";
-import Settings from "@/src/components/Settings";
 import { getTranslation } from "@/lib/languages";
+import { useRouter } from "next/navigation";
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -16,7 +16,9 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ isOpen = true, onClose, onToggle }: SidebarProps) => {
-  const { createSession, language } = useContext(Context);
+  const router = useRouter();
+  const { createSession } = useSessionContext();
+  const { language } = useLanguageContext();
   const t = (key: any) => getTranslation(language, key);
 
   return (
@@ -58,7 +60,17 @@ const Sidebar = ({ isOpen = true, onClose, onToggle }: SidebarProps) => {
         </div>
       </div>
       <div className="sidebar-bottom">
-        <Settings />
+        <button 
+          type="button" 
+          className="sidebar-bottom-item"
+          onClick={() => {
+            router.push("/settings");
+            if (onClose) onClose();
+          }}
+        >
+          <span>⚙️</span>
+          <span>{t("settings")}</span>
+        </button>
         <button type="button" className="sidebar-bottom-item">
           <Image src={assets.question_icon} alt="" width={20} height={20} />
           <span>{t("help")}</span>

@@ -35,3 +35,6 @@ git push -u origin main
 ✅ Remote is configured: `https://github.com/iamakashpc/norsk-learn.git`
 ✅ Ready to push once repository is created
 
+
+
+

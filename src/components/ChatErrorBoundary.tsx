@@ -31,8 +31,8 @@ class ChatErrorBoundary extends Component<Props, State> {
     };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("ChatErrorBoundary caught:", error, errorInfo);
+  componentDidCatch(_error: Error, _errorInfo: ErrorInfo) {
+    // Error caught by boundary, rendered in fallback UI
   }
 
   handleReset = () => {
@@ -76,4 +76,7 @@ class ChatErrorBoundary extends Component<Props, State> {
 }
 
 export default ChatErrorBoundary;
+
+
+
 

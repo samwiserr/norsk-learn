@@ -1,26 +1,18 @@
-/**
- * Session Context
- * Manages all session-related state and operations
- * This is the most complex context, handling sessions, messages, and chat interactions
- */
-
 "use client";
 
 import {
   createContext,
   useContext,
-  useState,
+  useReducer,
   useEffect,
   useCallback,
-  useRef,
   ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
-import { Session, Message, generateSessionTitleFromMessages } from "@/lib/sessions";
+import { Session, Message } from "@/lib/sessions";
 import { CEFRLevel, isValidCEFRLevel } from "@/lib/cefr";
-import { initializeProgress, clampProgress } from "@/lib/cefr-progress";
-import { LanguageCode, isValidLanguageCode } from "@/lib/languages";
-import { useSessionManagement } from "@/src/hooks/useSessionManagement";
+import { initializeProgress } from "@/lib/cefr-progress";
+import { LanguageCode } from "@/lib/languages";
 import { useAuthCheck } from "@/src/hooks/useAuthCheck";
 import { useLanguage } from "@/src/hooks/useLanguage";
 import { useSync } from "@/src/hooks/useSync";
@@ -29,7 +21,10 @@ import { ApiService } from "@/src/services/apiService";
 import { SessionRepository } from "@/src/repositories/sessionRepository";
 import { UserRepository } from "@/src/repositories/userRepository";
 import { StorageService } from "@/src/services/storageService";
-import { AppError, ErrorType, createAppError, getErrorMessage } from "@/lib/error-handling";
+import { formatTutorAssistantMessage } from "@/src/utils/tutorFormat";
+import { AppError, createAppError, getErrorMessage } from "@/lib/error-handling";
+import { createLogger } from "@/lib/logger";
+import { recordCorrectWord } from "@/lib/vocabulary-tracker";
 import {
   AUTH_REQUIRED_MESSAGE_COUNT,
   WELCOME_MESSAGE_DELAY,
@@ -37,349 +32,341 @@ import {
   CUSTOM_EVENTS,
 } from "@/lib/constants";
 
-interface SessionContextValue {
-  // Session state
+const log = createLogger("SessionContext");
+
+// ── State machine types ────────────────────────────────────────────────
+
+type Phase = "loading" | "needLevel" | "ready";
+
+interface SessionState {
+  phase: Phase;
+  sessions: Session[];
+  activeSessionId: string | null;
+  cefrLevel: CEFRLevel | null;
+  input: string;
+  loading: boolean;
+  showResults: boolean;
+  userMessageCount: number;
+  previousLanguage: LanguageCode | null;
+  needsWelcome: string | null;
+  lastTutorHint: string | null;
+  lastUserInput: string | null;
+  exerciseScore: number;
+  exerciseTurns: number;
+}
+
+type Action =
+  | { type: "INIT_LOADED"; sessions: Session[]; cefrLevel: CEFRLevel | null }
+  | { type: "SET_LEVEL"; level: CEFRLevel }
+  | { type: "SET_SESSIONS"; sessions: Session[]; activeId?: string | null }
+  | { type: "SET_ACTIVE"; id: string | null }
+  | { type: "UPDATE_SESSION"; id: string; data: Partial<Session> }
+  | { type: "DELETE_SESSION"; id: string }
+  | { type: "SET_INPUT"; value: string }
+  | { type: "SEND_START" }
+  | { type: "SEND_END" }
+  | { type: "SET_SHOW_RESULTS"; value: boolean }
+  | { type: "SET_MESSAGE_COUNT"; count: number }
+  | { type: "SET_PREVIOUS_LANGUAGE"; lang: LanguageCode }
+  | { type: "REQUEST_WELCOME"; sessionId: string }
+  | { type: "CLEAR_WELCOME" }
+  | { type: "SET_TUTOR_HINT"; hint: string | null }
+  | { type: "SET_LAST_USER_INPUT"; input: string | null }
+  | { type: "EXERCISE_CORRECT_TURN" }
+  | { type: "EXERCISE_INCORRECT_TURN" }
+  | { type: "RESET_EXERCISE_SCORE" };
+
+const initialState: SessionState = {
+  phase: "loading",
+  sessions: [],
+  activeSessionId: null,
+  cefrLevel: null,
+  input: "",
+  loading: false,
+  showResults: false,
+  userMessageCount: 0,
+  previousLanguage: null,
+  needsWelcome: null,
+  lastTutorHint: null,
+  lastUserInput: null,
+  exerciseScore: 0,
+  exerciseTurns: 0,
+};
+
+function sessionReducer(state: SessionState, action: Action): SessionState {
+  switch (action.type) {
+    case "INIT_LOADED": {
+      const phase: Phase = action.cefrLevel ? "ready" : "needLevel";
+      const activeId =
+        action.sessions.length > 0
+          ? action.sessions.reduce((a, b) => (a.updatedAt > b.updatedAt ? a : b)).id
+          : null;
+      return {
+        ...state,
+        phase,
+        sessions: action.sessions,
+        activeSessionId: activeId,
+        cefrLevel: action.cefrLevel,
+        showResults: action.sessions.length > 0,
+      };
+    }
+    case "SET_LEVEL":
+      return { ...state, phase: "ready", cefrLevel: action.level };
+    case "SET_SESSIONS": {
+      const activeId = action.activeId !== undefined ? action.activeId : state.activeSessionId;
+      return { ...state, sessions: action.sessions, activeSessionId: activeId };
+    }
+    case "SET_ACTIVE":
+      return { ...state, activeSessionId: action.id, showResults: action.id !== null };
+    case "UPDATE_SESSION": {
+      const exists = state.sessions.some((s) => s.id === action.id);
+      if (exists) {
+        return {
+          ...state,
+          sessions: state.sessions.map((s) =>
+            s.id === action.id ? { ...s, ...action.data, updatedAt: Date.now() } : s
+          ),
+        };
+      }
+      if (action.data && "id" in action.data) {
+        return {
+          ...state,
+          sessions: [...state.sessions, action.data as Session],
+        };
+      }
+      return state;
+    }
+    case "DELETE_SESSION": {
+      const filtered = state.sessions.filter((s) => s.id !== action.id);
+      const newActive =
+        state.activeSessionId === action.id
+          ? filtered.length > 0
+            ? filtered.reduce((a, b) => (a.updatedAt > b.updatedAt ? a : b)).id
+            : null
+          : state.activeSessionId;
+      return {
+        ...state,
+        sessions: filtered,
+        activeSessionId: newActive,
+        showResults: newActive !== null,
+      };
+    }
+    case "SET_INPUT":
+      return { ...state, input: action.value };
+    case "SEND_START":
+      return { ...state, loading: true, showResults: true };
+    case "SEND_END":
+      return { ...state, loading: false };
+    case "SET_SHOW_RESULTS":
+      return { ...state, showResults: action.value };
+    case "SET_MESSAGE_COUNT":
+      return { ...state, userMessageCount: action.count };
+    case "SET_PREVIOUS_LANGUAGE":
+      return { ...state, previousLanguage: action.lang };
+    case "REQUEST_WELCOME":
+      return { ...state, needsWelcome: action.sessionId };
+    case "CLEAR_WELCOME":
+      return { ...state, needsWelcome: null };
+    case "SET_TUTOR_HINT":
+      return { ...state, lastTutorHint: action.hint };
+    case "SET_LAST_USER_INPUT":
+      return { ...state, lastUserInput: action.input };
+    case "EXERCISE_CORRECT_TURN":
+      return { ...state, exerciseScore: state.exerciseScore + 1, exerciseTurns: state.exerciseTurns + 1 };
+    case "EXERCISE_INCORRECT_TURN":
+      return { ...state, exerciseTurns: state.exerciseTurns + 1 };
+    case "RESET_EXERCISE_SCORE":
+      return { ...state, exerciseScore: 0, exerciseTurns: 0 };
+    default:
+      return state;
+  }
+}
+
+// ── Context interface ──────────────────────────────────────────────────
+
+export interface SessionContextValue {
   sessions: Session[];
   activeSessionId: string | null;
   activeSession: Session | null;
   sessionsLoaded: boolean;
-  
-  // Session operations
   createSession: () => void;
   deleteSession: (id: string) => void;
   switchSession: (id: string) => void;
   renameSession: (id: string, title: string) => void;
   updateSession: (id: string, data: Partial<Session>) => void;
-  
-  // Chat state
   input: string;
   setInput: (value: string) => void;
   loading: boolean;
   showResults: boolean;
-  
-  // Chat operations
-  onSent: () => Promise<void>;
+  onSent: (overrideInput?: string) => Promise<void>;
   newChat: () => void;
-  
-  // User state
   userMessageCount: number;
   isAuthRequired: boolean;
-  
-  // CEFR Level
   cefrLevel: CEFRLevel | null;
   setCefrLevel: (level: CEFRLevel) => void;
   levelLoaded: boolean;
+  exerciseMode: string | null;
+  topicId: string | null;
+  setExerciseMode: (mode: string, topicId?: string) => void;
+  lastTutorHint: string | null;
+  retryLastMessage: () => void;
+  exerciseScore: number;
+  exerciseTurns: number;
 }
 
 const SessionContext = createContext<SessionContextValue>({} as SessionContextValue);
 
 export const useSessionContext = () => {
-  const context = useContext(SessionContext);
-  if (!context) {
-    throw new Error("useSessionContext must be used within SessionProvider");
-  }
-  return context;
+  const ctx = useContext(SessionContext);
+  if (!ctx) throw new Error("useSessionContext must be used within SessionProvider");
+  return ctx;
 };
 
-interface SessionProviderProps {
-  children: ReactNode;
-}
+// ── Provider ───────────────────────────────────────────────────────────
 
-export const SessionProvider = ({ children }: SessionProviderProps) => {
+export const SessionProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
   const { isAuthenticated, user } = useAuthCheck();
   const { language: currentLanguage } = useLanguage();
-  
-  const [cefrLevel, setCefrLevelState] = useState<CEFRLevel | null>(null);
-  const [levelLoaded, setLevelLoaded] = useState(false);
-  const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [showResults, setShowResults] = useState(false);
-  const [userMessageCount, setUserMessageCount] = useState(0);
-  
-  const previousLevelRef = useRef<CEFRLevel | null>(null);
-  const previousLanguageRef = useRef<LanguageCode | null>(null);
-  const isInitialLoadRef = useRef(true);
-  
-  const {
-    sessions,
-    activeSessionId,
-    activeSession,
-    sessionsLoaded,
-    createSession: createSessionBase,
-    deleteSession: deleteSessionBase,
-    switchSession: switchSessionBase,
-    renameSession: renameSessionBase,
-    updateSession: updateSessionBase,
-    setActiveSessionId,
-  } = useSessionManagement();
+  const [state, dispatch] = useReducer(sessionReducer, initialState);
 
-  // Sync functionality
-  const { syncStatus, syncSession } = useSync(
+  const activeSession = state.sessions.find((s) => s.id === state.activeSessionId) ?? null;
+
+  // Persist sessions to storage whenever they change
+  useEffect(() => {
+    if (state.phase !== "loading") {
+      SessionRepository.saveAll(state.sessions);
+    }
+  }, [state.sessions, state.phase]);
+
+  // Sync
+  const { syncSession } = useSync(
     user,
-    activeSessionId,
-    sessions,
+    state.activeSessionId,
+    state.sessions,
     (sessionId: string, session: Session) => {
-      updateSessionBase(sessionId, session);
+      dispatch({ type: "UPDATE_SESSION", id: sessionId, data: session });
     }
   );
 
-  // Load CEFR level on mount
+  // ── Effect 1: Initialize from storage ──
   useEffect(() => {
-    const stored = StorageService.loadCEFRLevel();
-    if (stored && isValidCEFRLevel(stored)) {
-      setCefrLevelState(stored);
-      setLevelLoaded(true);
-    } else {
-      setLevelLoaded(true);
+    const storedLevel = StorageService.loadCEFRLevel();
+    const level = storedLevel && isValidCEFRLevel(storedLevel) ? (storedLevel as CEFRLevel) : null;
+    const sessions = SessionRepository.getAll();
+
+    dispatch({ type: "INIT_LOADED", sessions, cefrLevel: level });
+
+    if (typeof window !== "undefined") {
+      const count = UserRepository.getUserMessageCount();
+      dispatch({ type: "SET_MESSAGE_COUNT", count });
+    }
+
+    if (!level) {
       router.push("/level-selection");
     }
   }, [router]);
 
-  // Load user message count on mount
+  // ── Effect 2: Handle "from level selection" flag ──
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const count = UserRepository.getUserMessageCount();
-      setUserMessageCount(count);
+    if (state.phase !== "ready" || !state.cefrLevel) return;
+    if (typeof window === "undefined") return;
+    if (window.location.pathname === "/level-selection") return;
+
+    const flag = sessionStorage.getItem(SESSION_STORAGE_KEYS.FROM_LEVEL_SELECTION);
+    if (flag !== "true") return;
+
+    sessionStorage.removeItem(SESSION_STORAGE_KEYS.FROM_LEVEL_SELECTION);
+    log.info("Arrived from level selection, creating fresh session");
+
+    SessionRepository.clearAll();
+    const session = SessionService.create(state.cefrLevel);
+    dispatch({ type: "SET_SESSIONS", sessions: [session], activeId: session.id });
+    dispatch({ type: "SET_SHOW_RESULTS", value: false });
+  }, [state.phase, state.cefrLevel]);
+
+  // ── Effect 3: Language change detection ──
+  useEffect(() => {
+    if (state.phase !== "ready" || !currentLanguage) return;
+
+    if (state.previousLanguage === null) {
+      dispatch({ type: "SET_PREVIOUS_LANGUAGE", lang: currentLanguage });
+      return;
     }
-  }, []);
 
-  // Set CEFR level with persistence
-  const setCefrLevel = useCallback((level: CEFRLevel) => {
-    setCefrLevelState(level);
-    StorageService.saveCEFRLevel(level);
-  }, []);
+    if (state.previousLanguage === currentLanguage) return;
 
-  // Generate welcome message
-  const generateWelcomeMessage = useCallback(
-    async (sessionId: string, level: CEFRLevel, overrideLanguage?: LanguageCode) => {
-      const languageToUse = overrideLanguage || currentLanguage;
+    log.info("Language changed", {
+      from: state.previousLanguage,
+      to: currentLanguage,
+    });
+    dispatch({ type: "SET_PREVIOUS_LANGUAGE", lang: currentLanguage });
+
+    SessionRepository.clearAll();
+    if (state.cefrLevel) {
+      const session = SessionService.create(state.cefrLevel);
+      dispatch({ type: "SET_SESSIONS", sessions: [session], activeId: session.id });
+      dispatch({ type: "SET_SHOW_RESULTS", value: false });
+    } else {
+      dispatch({ type: "SET_SESSIONS", sessions: [], activeId: null });
+    }
+  }, [state.phase, currentLanguage, state.previousLanguage, state.cefrLevel]);
+
+  // ── Effect 4: Create initial session if none exist ──
+  useEffect(() => {
+    if (state.phase !== "ready") return;
+    if (state.sessions.length > 0) return;
+    if (!state.cefrLevel) return;
+    if (typeof window !== "undefined" && window.location.pathname === "/level-selection") return;
+
+    log.info("No sessions exist, creating initial session");
+    const session = SessionService.create(state.cefrLevel);
+    dispatch({ type: "UPDATE_SESSION", id: session.id, data: session });
+    dispatch({ type: "SET_ACTIVE", id: session.id });
+  }, [state.phase, state.sessions.length, state.cefrLevel]);
+
+  // ── Effect 5: Generate welcome message when requested ──
+  useEffect(() => {
+    if (!state.needsWelcome || !state.cefrLevel) return;
+    const sessionId = state.needsWelcome;
+    dispatch({ type: "CLEAR_WELCOME" });
+
+    const timer = setTimeout(async () => {
       const welcomeMessage = await SessionService.generateWelcomeMessage(
         sessionId,
-        level,
-        languageToUse
+        state.cefrLevel!,
+        currentLanguage
       );
-
       if (welcomeMessage) {
-        const session = SessionRepository.getById(sessionId);
+        const session = state.sessions.find((s) => s.id === sessionId);
         if (session) {
-          const updated: Session = {
-            ...session,
-            messages: [welcomeMessage],
-            messageCount: 1,
-            updatedAt: Date.now(),
-          };
-          updateSessionBase(sessionId, updated);
-          if (activeSessionId === sessionId) {
-            setShowResults(true);
-          }
+          dispatch({
+            type: "UPDATE_SESSION",
+            id: sessionId,
+            data: { messages: [welcomeMessage], messageCount: 1 },
+          });
+          dispatch({ type: "SET_SHOW_RESULTS", value: true });
         }
       }
-    },
-    [currentLanguage, activeSessionId, updateSessionBase]
-  );
+    }, WELCOME_MESSAGE_DELAY);
 
-  // Handle active session changes
-  useEffect(() => {
-    if (!sessionsLoaded) return;
+    return () => clearTimeout(timer);
+  }, [state.needsWelcome, state.cefrLevel, currentLanguage, state.sessions]);
 
-    if (!activeSessionId) {
-      if (sessions.length > 0) {
-        const latest = SessionRepository.getLatest();
-        if (latest) {
-          setActiveSessionId(latest.id);
-          setShowResults(true);
-        }
-      } else {
-        setShowResults(false);
-      }
-      return;
-    }
+  // ── Actions ──────────────────────────────────────────────────────────
 
-    const session = sessions.find((s) => s.id === activeSessionId);
-    if (session) {
-      setShowResults(true);
-      if (session.messages.length === 0 && cefrLevel) {
-        setTimeout(() => generateWelcomeMessage(session.id, cefrLevel), WELCOME_MESSAGE_DELAY);
-      }
-    } else {
-      if (sessions.length > 0) {
-        const latest = SessionRepository.getLatest();
-        if (latest) {
-          setActiveSessionId(latest.id);
-          setShowResults(true);
-        }
-      } else {
-        setActiveSessionId(null);
-        setShowResults(false);
-      }
-    }
-  }, [activeSessionId, sessions, cefrLevel, generateWelcomeMessage, sessionsLoaded, setActiveSessionId]);
+  const setCefrLevel = useCallback((level: CEFRLevel) => {
+    StorageService.saveCEFRLevel(level);
+    dispatch({ type: "SET_LEVEL", level });
+  }, []);
 
-  // Handle level changes and create sessions
-  useEffect(() => {
-    if (!levelLoaded || !sessionsLoaded) return;
-
-    const fromLevelSelection =
-      typeof window !== "undefined" &&
-      sessionStorage.getItem(SESSION_STORAGE_KEYS.FROM_LEVEL_SELECTION) === "true";
-
-    const storedLevel = typeof window !== "undefined"
-      ? StorageService.loadCEFRLevel()
-      : null;
-    const effectiveLevel =
-      fromLevelSelection && storedLevel && isValidCEFRLevel(storedLevel)
-        ? (storedLevel as CEFRLevel)
-        : cefrLevel;
-
-    if (!effectiveLevel) return;
-
-    if (isInitialLoadRef.current) {
-      previousLevelRef.current = effectiveLevel;
-      previousLanguageRef.current = currentLanguage;
-      isInitialLoadRef.current = false;
-
-      if (sessions.length === 0) {
-        const session = SessionService.create(effectiveLevel);
-        updateSessionBase(session.id, session);
-        setActiveSessionId(session.id);
-        setShowResults(true);
-        setTimeout(() => generateWelcomeMessage(session.id, effectiveLevel), WELCOME_MESSAGE_DELAY);
-      }
-
-      if (effectiveLevel !== cefrLevel && effectiveLevel) {
-        setCefrLevelState(effectiveLevel);
-      }
-      return;
-    }
-
-    const levelChanged = previousLevelRef.current && previousLevelRef.current !== effectiveLevel;
-    const storedLanguage =
-      typeof window !== "undefined" ? StorageService.loadLanguage() : currentLanguage;
-    const currentLang =
-      storedLanguage && isValidLanguageCode(storedLanguage) ? storedLanguage : currentLanguage;
-    const languageChanged =
-      previousLanguageRef.current && previousLanguageRef.current !== currentLang;
-    const shouldCreateFromLevelSelection = fromLevelSelection && !isInitialLoadRef.current;
-
-    if (currentLang !== currentLanguage && isValidLanguageCode(currentLang)) {
-      // Language will be updated by LanguageContext
-    }
-
-    if (levelChanged || shouldCreateFromLevelSelection) {
-      const currentLevel = effectiveLevel;
-      if (!currentLevel || !isValidCEFRLevel(currentLevel)) {
-        return;
-      }
-
-      const session = SessionService.create(currentLevel);
-      updateSessionBase(session.id, session);
-      setActiveSessionId(session.id);
-      setShowResults(true);
-      setTimeout(() => {
-        generateWelcomeMessage(session.id, currentLevel, currentLang);
-      }, WELCOME_MESSAGE_DELAY);
-
-      previousLevelRef.current = currentLevel;
-      previousLanguageRef.current = currentLang;
-
-      if (currentLevel !== cefrLevel) {
-        setCefrLevelState(currentLevel);
-      }
-
-      if (fromLevelSelection && typeof window !== "undefined") {
-        sessionStorage.removeItem(SESSION_STORAGE_KEYS.FROM_LEVEL_SELECTION);
-      }
-    } else {
-      if (previousLevelRef.current === null) {
-        previousLevelRef.current = effectiveLevel;
-      }
-      if (previousLanguageRef.current === null) {
-        previousLanguageRef.current = currentLang || currentLanguage;
-      } else if (languageChanged && !fromLevelSelection) {
-        previousLanguageRef.current = currentLang || currentLanguage;
-      }
-      if (effectiveLevel !== cefrLevel && effectiveLevel) {
-        setCefrLevelState(effectiveLevel);
-      }
-      if (fromLevelSelection && typeof window !== "undefined") {
-        sessionStorage.removeItem(SESSION_STORAGE_KEYS.FROM_LEVEL_SELECTION);
-      }
-    }
-  }, [
-    cefrLevel,
-    currentLanguage,
-    levelLoaded,
-    sessionsLoaded,
-    generateWelcomeMessage,
-    sessions,
-    activeSession,
-    updateSessionBase,
-    setActiveSessionId,
-  ]);
-
-  // Dedicated check for level selection flag
-  useEffect(() => {
-    if (!levelLoaded || !sessionsLoaded || isInitialLoadRef.current) return;
-
-    const checkFlag = () => {
-      if (typeof window !== "undefined") {
-        const flag = sessionStorage.getItem(SESSION_STORAGE_KEYS.FROM_LEVEL_SELECTION);
-        if (flag === "true") {
-          const storedLevel = StorageService.loadCEFRLevel();
-          const storedLanguage = StorageService.loadLanguage();
-          const currentLevel =
-            storedLevel && isValidCEFRLevel(storedLevel) ? storedLevel : cefrLevel;
-          const currentLang =
-            storedLanguage && isValidLanguageCode(storedLanguage)
-              ? storedLanguage
-              : currentLanguage;
-
-          if (currentLevel && isValidCEFRLevel(currentLevel)) {
-            const session = SessionService.create(currentLevel);
-            updateSessionBase(session.id, session);
-            setActiveSessionId(session.id);
-            setShowResults(true);
-            setTimeout(() => {
-              generateWelcomeMessage(session.id, currentLevel, currentLang);
-            }, WELCOME_MESSAGE_DELAY);
-
-            previousLevelRef.current = currentLevel;
-            previousLanguageRef.current = currentLang;
-
-            if (currentLevel !== cefrLevel) {
-              setCefrLevelState(currentLevel);
-            }
-
-            sessionStorage.removeItem(SESSION_STORAGE_KEYS.FROM_LEVEL_SELECTION);
-          }
-        }
-      }
-    };
-
-    checkFlag();
-
-    const handleCheckEvent = () => {
-      setTimeout(checkFlag, 100);
-    };
-
-    window.addEventListener(CUSTOM_EVENTS.CHECK_LEVEL_SELECTION_FLAG, handleCheckEvent);
-    const intervalId = setInterval(checkFlag, 1000);
-
-    return () => {
-      clearInterval(intervalId);
-      window.removeEventListener(CUSTOM_EVENTS.CHECK_LEVEL_SELECTION_FLAG, handleCheckEvent);
-    };
-  }, [levelLoaded, sessionsLoaded, cefrLevel, currentLanguage, generateWelcomeMessage, sessions, updateSessionBase, setActiveSessionId]);
-
-  // Create session with welcome message
   const createSession = useCallback(() => {
-    let level = cefrLevel;
+    let level = state.cefrLevel;
     if (!level) {
       const stored = StorageService.loadCEFRLevel();
       if (stored && isValidCEFRLevel(stored)) {
-        level = stored;
-        setCefrLevelState(stored);
+        level = stored as CEFRLevel;
+        dispatch({ type: "SET_LEVEL", level });
       }
     }
     if (!level) {
@@ -389,237 +376,302 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
 
     const emptySession = SessionService.findEmptySession(level);
     if (emptySession) {
-      setActiveSessionId(emptySession.id);
-      setShowResults(true);
-      if (emptySession.messages.length === 0) {
-        setTimeout(() => generateWelcomeMessage(emptySession.id, level!), WELCOME_MESSAGE_DELAY);
-      }
+      dispatch({ type: "SET_ACTIVE", id: emptySession.id });
       return;
     }
 
     const session = SessionService.create(level);
-    updateSessionBase(session.id, session);
-    setActiveSessionId(session.id);
-    setShowResults(true);
-    setTimeout(() => generateWelcomeMessage(session.id, level!), WELCOME_MESSAGE_DELAY);
-  }, [cefrLevel, sessions, generateWelcomeMessage, router, setActiveSessionId, updateSessionBase]);
+    dispatch({ type: "UPDATE_SESSION", id: session.id, data: session });
+    dispatch({ type: "SET_ACTIVE", id: session.id });
+  }, [state.cefrLevel, router]);
 
-  // Delete session
-  const deleteSession = useCallback(
-    (id: string) => {
-      deleteSessionBase(id);
-      if (activeSessionId === id) {
-        if (sessions.length > 1) {
-          setActiveSessionId(null);
-        } else {
-          setActiveSessionId(null);
-          setShowResults(false);
+  const deleteSession = useCallback((id: string) => {
+    SessionRepository.delete(id);
+    dispatch({ type: "DELETE_SESSION", id });
+  }, []);
+
+  const switchSession = useCallback((id: string) => {
+    dispatch({ type: "SET_ACTIVE", id });
+  }, []);
+
+  const renameSession = useCallback((id: string, title: string) => {
+    dispatch({ type: "UPDATE_SESSION", id, data: { title } });
+  }, []);
+
+  const updateSession = useCallback(
+    (id: string, data: Partial<Session>) => {
+      dispatch({ type: "UPDATE_SESSION", id, data });
+      if (user) {
+        const session = SessionRepository.getById(id);
+        if (session) {
+          syncSession({ ...session, ...data, updatedAt: Date.now() } as Session);
         }
       }
     },
-    [activeSessionId, sessions.length, deleteSessionBase, setActiveSessionId]
+    [user, syncSession]
   );
 
-  // Switch session
-  const switchSession = useCallback(
-    (id: string) => {
-      switchSessionBase(id);
-    },
-    [switchSessionBase]
-  );
+  const setInput = useCallback((value: string) => {
+    dispatch({ type: "SET_INPUT", value });
+  }, []);
 
-  // Rename session
-  const renameSession = useCallback(
-    (id: string, title: string) => {
-      renameSessionBase(id, title);
-    },
-    [renameSessionBase]
-  );
+  const onSent = useCallback(
+    async (overrideInput?: string) => {
+      const effectiveInput = (overrideInput ?? state.input).trim();
+      if (!effectiveInput || !activeSession) return;
 
-  // Update session with sync
-  const updateSession = useCallback(
-    (id: string, data: Partial<Session>) => {
-      updateSessionBase(id, data);
-      const session = SessionRepository.getById(id);
-      if (session && user) {
-        syncSession({ ...session, ...data, updatedAt: Date.now() } as Session);
+      const currentCount = UserRepository.getUserMessageCount();
+      if (currentCount >= AUTH_REQUIRED_MESSAGE_COUNT && !isAuthenticated) {
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new Event(CUSTOM_EVENTS.AUTH_REQUIRED));
+        }
+        return;
+      }
+
+      const newCount = UserRepository.incrementUserMessageCount();
+      dispatch({ type: "SET_MESSAGE_COUNT", count: newCount });
+
+      const sessionLevel = activeSession.cefrLevel || state.cefrLevel || StorageService.loadCEFRLevel();
+      if (!sessionLevel || !isValidCEFRLevel(sessionLevel)) {
+        log.error("Cannot send message: invalid level");
+        return;
+      }
+
+      const userMessage: Message = {
+        id: `msg_${Date.now()}_user`,
+        role: "user",
+        content: effectiveInput,
+        timestamp: Date.now(),
+      };
+
+      const originalMessages = activeSession.messages;
+      const messagesWithUser = [...originalMessages, userMessage];
+      const placeholder: Message = {
+        id: `msg_${Date.now()}_assistant_placeholder`,
+        role: "assistant-streaming",
+        content: "",
+        timestamp: Date.now(),
+      };
+
+      updateSession(activeSession.id, {
+        messages: [...messagesWithUser, placeholder],
+        messageCount: messagesWithUser.length + 1,
+      });
+      dispatch({ type: "SET_INPUT", value: "" });
+      dispatch({ type: "SEND_START" });
+      dispatch({ type: "SET_LAST_USER_INPUT", input: effectiveInput });
+
+      try {
+        const sessionMode = activeSession.exerciseMode ?? undefined;
+        const sessionTopic = activeSession.topicId ?? undefined;
+
+        const data = await ApiService.sendMessage(
+          effectiveInput,
+          sessionLevel,
+          activeSession.progress ?? 0,
+          currentLanguage,
+          originalMessages,
+          sessionMode,
+          sessionTopic,
+        );
+
+        if (data.hint) {
+          dispatch({ type: "SET_TUTOR_HINT", hint: data.hint });
+        }
+
+        // Record vocabulary from topic practice to the tracker
+        if (Array.isArray(data.vocabIntroduced)) {
+          for (const v of data.vocabIntroduced) {
+            if (typeof v?.word === "string") {
+              recordCorrectWord(v.word, v.translation);
+            }
+          }
+        }
+
+        const hasMustFix = Array.isArray(data.fixes) && data.fixes.some((f: any) => f?.severity === "must_fix");
+        dispatch({ type: hasMustFix ? "EXERCISE_INCORRECT_TURN" : "EXERCISE_CORRECT_TURN" });
+
+        const assistantContent = formatTutorAssistantMessage(data, currentLanguage);
+        const assistantMessage: Message = {
+          id: placeholder.id,
+          role: "assistant",
+          content: assistantContent.trim(),
+          timestamp: Date.now(),
+        };
+
+        const finalMessages = [...messagesWithUser, assistantMessage];
+        const delta = data.progressDelta ?? 0;
+        const updated = SessionService.updateProgress(activeSession, delta);
+        const titled = SessionService.updateTitle(updated, sessionLevel);
+
+        updateSession(activeSession.id, {
+          ...titled,
+          messages: finalMessages,
+          messageCount: finalMessages.length,
+          completedTasks: activeSession.completedTasks + 1,
+        });
+      } catch (error) {
+        log.error("Error sending message", error);
+        const appError = error instanceof AppError ? error : createAppError(error);
+        const errorMsg: Message = {
+          id: placeholder.id,
+          role: "assistant",
+          content: getErrorMessage(appError, currentLanguage),
+          timestamp: Date.now(),
+        };
+        updateSession(activeSession.id, {
+          messages: [...messagesWithUser, errorMsg],
+          messageCount: messagesWithUser.length + 1,
+        });
+      } finally {
+        dispatch({ type: "SEND_END" });
       }
     },
-    [updateSessionBase, user, syncSession]
+    [state.input, activeSession, state.cefrLevel, currentLanguage, updateSession, isAuthenticated]
   );
 
-  // Send message
-  const onSent = useCallback(async () => {
-    if (!input.trim() || !activeSession) return;
+  const setExerciseMode = useCallback(async (mode: string, topicId?: string) => {
+    if (!activeSession || !state.cefrLevel) return;
 
-    const currentCount = UserRepository.getUserMessageCount();
-    const requiresAuth = currentCount >= AUTH_REQUIRED_MESSAGE_COUNT && !isAuthenticated;
-
-    if (requiresAuth) {
-      if (typeof window !== "undefined") {
-        window.dispatchEvent(new Event(CUSTOM_EVENTS.AUTH_REQUIRED));
-      }
-      return;
-    }
-
-    const newCount = UserRepository.incrementUserMessageCount();
-    setUserMessageCount(newCount);
-
-    const sessionLevel =
-      activeSession.cefrLevel || cefrLevel || StorageService.loadCEFRLevel();
-    if (!sessionLevel || !isValidCEFRLevel(sessionLevel)) {
-      console.error("Cannot send message: invalid level");
-      return;
-    }
-
-    const userMessageContent = input.trim();
-    const userMessage: Message = {
-      id: `msg_${Date.now()}_user`,
-      role: "user",
-      content: userMessageContent,
-      timestamp: Date.now(),
+    const MODE_TITLES: Record<string, string> = {
+      free_conversation: "Free Conversation",
+      translation: "Translation Practice",
+      grammar_drill: "Grammar Drill",
+      topic_practice: "Topic Practice",
     };
+    const title = topicId
+      ? `${MODE_TITLES[mode] ?? mode}: ${topicId.replace(/_/g, " ")}`
+      : MODE_TITLES[mode] ?? mode;
 
-    const messagesWithUser = [...activeSession.messages, userMessage];
-    const assistantPlaceholder: Message = {
-      id: `msg_${Date.now()}_assistant_placeholder`,
+    updateSession(activeSession.id, {
+      exerciseMode: mode,
+      topicId: topicId ?? undefined,
+      title,
+    });
+
+    dispatch({ type: "RESET_EXERCISE_SCORE" });
+    dispatch({ type: "SET_TUTOR_HINT", hint: null });
+
+    const placeholder: Message = {
+      id: `msg_${Date.now()}_mode_opener`,
       role: "assistant-streaming",
       content: "",
       timestamp: Date.now(),
     };
-
-    const messagesWithPlaceholder = [...messagesWithUser, assistantPlaceholder];
-    const optimisticSession: Session = {
-      ...activeSession,
-      messages: messagesWithPlaceholder,
-      messageCount: messagesWithPlaceholder.length,
-      updatedAt: Date.now(),
-    };
-
-    updateSession(activeSession.id, optimisticSession);
-    setInput("");
-    setLoading(true);
-    setShowResults(true);
+    updateSession(activeSession.id, {
+      exerciseMode: mode,
+      topicId: topicId ?? undefined,
+      title,
+      messages: [placeholder],
+      messageCount: 1,
+    });
+    dispatch({ type: "SET_SHOW_RESULTS", value: true });
+    dispatch({ type: "SEND_START" });
 
     try {
       const data = await ApiService.sendMessage(
-        userMessageContent,
-        sessionLevel,
+        "[EXERCISE_START]",
+        state.cefrLevel,
         activeSession.progress ?? 0,
         currentLanguage,
-        activeSession.messages
+        [],
+        mode,
+        topicId,
       );
 
-      let assistantContent = "";
-
-      if (data.hasError) {
-        if (data.correction) {
-          assistantContent += `${data.correction}\n\n`;
-        }
-        if (data.explanation) {
-          assistantContent += `${data.explanation}\n\n`;
-        }
-      } else {
-        if (data.praise) {
-          assistantContent += `${data.praise}\n\n`;
+      if (data.hint) {
+        dispatch({ type: "SET_TUTOR_HINT", hint: data.hint });
+      }
+      if (Array.isArray(data.vocabIntroduced)) {
+        for (const v of data.vocabIntroduced) {
+          if (typeof v?.word === "string") {
+            recordCorrectWord(v.word, v.translation);
+          }
         }
       }
 
-      assistantContent += data.nextQuestion || "";
-
-      const assistantMessage: Message = {
-        id: assistantPlaceholder.id,
+      const content = formatTutorAssistantMessage(data, currentLanguage);
+      const openerMsg: Message = {
+        id: placeholder.id,
         role: "assistant",
-        content: assistantContent.trim(),
+        content: content.trim(),
         timestamp: Date.now(),
       };
-
-      const finalMessages = [...messagesWithUser, assistantMessage];
-      const delta = data.progressDelta ?? 0;
-      const updatedSession = SessionService.updateProgress(activeSession, delta);
-      const titledSession = SessionService.updateTitle(updatedSession, sessionLevel);
-
-      const finalSession: Session = {
-        ...titledSession,
-        messages: finalMessages,
-        messageCount: finalMessages.length,
-        completedTasks: activeSession.completedTasks + 1,
-        updatedAt: Date.now(),
-      };
-
-      updateSession(activeSession.id, finalSession);
+      updateSession(activeSession.id, {
+        messages: [openerMsg],
+        messageCount: 1,
+      });
     } catch (error) {
-      console.error("Error sending message", error);
-
+      log.error("Error generating exercise opener", error);
       const appError = error instanceof AppError ? error : createAppError(error);
-      const errorMessage: Message = {
-        id: assistantPlaceholder.id,
+      const fallback: Message = {
+        id: placeholder.id,
         role: "assistant",
         content: getErrorMessage(appError, currentLanguage),
         timestamp: Date.now(),
       };
-      const errorSession: Session = {
-        ...activeSession,
-        messages: [...messagesWithUser, errorMessage],
-        messageCount: messagesWithUser.length + 1,
-        updatedAt: Date.now(),
-      };
-      updateSession(activeSession.id, errorSession);
+      updateSession(activeSession.id, {
+        messages: [fallback],
+        messageCount: 1,
+      });
     } finally {
-      setLoading(false);
+      dispatch({ type: "SEND_END" });
     }
-  }, [
-    input,
-    activeSession,
-    cefrLevel,
-    currentLanguage,
-    updateSession,
-    isAuthenticated,
-  ]);
+  }, [activeSession, state.cefrLevel, currentLanguage, updateSession]);
 
-  // New chat
+  const retryLastMessage = useCallback(() => {
+    if (state.lastUserInput) {
+      onSent(state.lastUserInput);
+    }
+  }, [state.lastUserInput, onSent]);
+
   const newChat = useCallback(() => {
-    if (!activeSession || !cefrLevel) return;
-    const initial = initializeProgress(cefrLevel);
-    const resetSession: Session = {
-      ...activeSession,
+    if (!activeSession || !state.cefrLevel) return;
+    const initial = initializeProgress(state.cefrLevel);
+    updateSession(activeSession.id, {
       messages: [],
       messageCount: 0,
       completedTasks: 0,
       progress: initial,
-      updatedAt: Date.now(),
-    };
-    updateSession(activeSession.id, resetSession);
-    setShowResults(false);
-    setInput("");
-    setTimeout(() => generateWelcomeMessage(activeSession.id, cefrLevel), WELCOME_MESSAGE_DELAY);
-  }, [activeSession, cefrLevel, updateSession, generateWelcomeMessage]);
+      exerciseMode: undefined,
+      topicId: undefined,
+      title: "New Conversation",
+    });
+    dispatch({ type: "SET_SHOW_RESULTS", value: false });
+    dispatch({ type: "SET_INPUT", value: "" });
+    dispatch({ type: "RESET_EXERCISE_SCORE" });
+    dispatch({ type: "SET_TUTOR_HINT", hint: null });
+  }, [activeSession, state.cefrLevel, updateSession]);
 
   const contextValue: SessionContextValue = {
-    sessions,
-    activeSessionId,
+    sessions: state.sessions,
+    activeSessionId: state.activeSessionId,
     activeSession,
-    sessionsLoaded,
+    sessionsLoaded: state.phase !== "loading",
     createSession,
     deleteSession,
     switchSession,
     renameSession,
     updateSession,
-    input,
+    input: state.input,
     setInput,
-    loading,
-    showResults,
+    loading: state.loading,
+    showResults: state.showResults,
     onSent,
     newChat,
-    userMessageCount,
-    isAuthRequired: userMessageCount >= AUTH_REQUIRED_MESSAGE_COUNT && !isAuthenticated,
-    cefrLevel,
+    userMessageCount: state.userMessageCount,
+    isAuthRequired: state.userMessageCount >= AUTH_REQUIRED_MESSAGE_COUNT && !isAuthenticated,
+    cefrLevel: state.cefrLevel,
     setCefrLevel,
-    levelLoaded,
+    levelLoaded: state.phase !== "loading",
+    exerciseMode: activeSession?.exerciseMode ?? null,
+    topicId: activeSession?.topicId ?? null,
+    setExerciseMode,
+    lastTutorHint: state.lastTutorHint,
+    retryLastMessage,
+    exerciseScore: state.exerciseScore,
+    exerciseTurns: state.exerciseTurns,
   };
 
-  return (
-    <SessionContext.Provider value={contextValue}>{children}</SessionContext.Provider>
-  );
+  return <SessionContext.Provider value={contextValue}>{children}</SessionContext.Provider>;
 };
-

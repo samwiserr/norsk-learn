@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OpenAI Realtime Test</title>
+</head>
+<body>
+    <h1>OpenAI Realtime API Test</h1>
+    <button id="start">Start Session</button>
+    <div id="status">Idle</div>
+    <div id="logs" style="font-family: monospace; white-space: pre-wrap; margin-top: 20px;"></div>
+
+    <script>
+        const logs = document.getElementById('logs');
+        const status = document.getElementById('status');
+        
+        function log(msg) {
+            console.log(msg);
+            logs.textContent += msg + '\n';
+        }
+
+        document.getElementById('start').onclick = async () => {
+            try {
+                status.textContent = 'Connecting...';
+                log('[1] Fetching ephemeral token...');
+                
+                const tokenRes = await fetch('/api/openai-realtime', { method: 'POST' });
+                const tokenData = await tokenRes.json();
+                
+                if (!tokenData.client_secret?.value) {
+                    throw new Error('No token received');
+                }
+                
+                log('[2] Token received: ' + tokenData.client_secret.value.substring(0, 20) + '...');
+                
+                const pc = new RTCPeerConnection();
+                
+                pc.ontrack = (e) => {
+                    log('[AUDIO] Track received! Streams: ' + e.streams.length);
+                    const audio = document.createElement('audio');
+                    audio.autoplay = true;
+                    audio.srcObject = e.streams[0];
+                    document.body.appendChild(audio);
+                    audio.play().then(() => log('[AUDIO] Playing')).catch(e => log('[AUDIO] Error: ' + e));
+                };
+                
+                log('[3] Getting microphone...');
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                stream.getTracks().forEach(t => pc.addTrack(t, stream));
+                log('[4] Microphone added');
+                
+                // CRITICAL: Request audio back
+                pc.addTransceiver('audio', { direction: 'sendrecv' });
+                log('[5] Audio transceiver added');
+                
+                const dc = pc.createDataChannel('oai-events');
+                
+                dc.onopen = () => {
+                    log('[DC] Opened');
+                    dc.send(JSON.stringify({
+                        type: 'session.update',
+                        session: {
+                            modalities: ['text', 'audio'],
+                            instructions: 'Say "Hello, this is a test" in Norwegian.',
+                            voice: 'alloy',
+                            turn_detection: { type: 'server_vad' }
+                        }
+                    }));
+                };
+                
+                dc.onmessage = (e) => {
+                    const event = JSON.parse(e.data);
+                    log('[DC] ' + event.type);
+                    
+                    if (event.type === 'session.updated') {
+                        log('[DC] Triggering response...');
+                        dc.send(JSON.stringify({ type: 'response.create' }));
+                    }
+                    
+                    if (event.type === 'response.audio_transcript.done') {
+                        log('[TRANSCRIPT] ' + event.transcript);
+                    }
+                };
+                
+                log('[6] Creating offer...');
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+                
+                log('[7] Sending to OpenAI...');
+                const sdpRes = await fetch('https://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${tokenData.client_secret.value}`,
+                        'Content-Type': 'application/sdp'
+                    },
+                    body: offer.sdp
+                });
+                
+                if (!sdpRes.ok) {
+                    throw new Error('SDP failed: ' + await sdpRes.text());
+                }
+                
+                const answerSdp = await sdpRes.text();
+                await pc.setRemoteDescription({ type: 'answer', sdp: answerSdp });
+                
+                log('[8] Connected! Waiting for audio...');
+                status.textContent = 'Connected';
+                
+            } catch (err) {
+                log('[ERROR] ' + err.message);
+                status.textContent = 'Error';
+            }
+        };
+    </script>
+</body>
+</html>

@@ -19,8 +19,8 @@
 }
 
 .session-item.active {
-  background-color: #e0e7ff;
-  color: #667eea;
+  background-color: #EFF6FF;
+  color: #2563EB; /* Accent blue */
   font-weight: 500;
 }
 
@@ -72,8 +72,8 @@
 }
 
 .session-item.active .session-menu-button:hover {
-  background-color: rgba(102, 126, 234, 0.1);
-  color: #667eea;
+  background-color: rgba(37, 99, 235, 0.1);
+  color: #2563EB; /* Accent blue */
 }
 
 .session-menu {

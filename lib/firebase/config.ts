@@ -10,12 +10,8 @@ import { config } from "@/lib/config";
  * TODO: Remove fallback values after migration is complete
  */
 function getFirebaseConfig() {
-  // Check if we're in build context
-  const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build' || 
-                      process.env.NEXT_PHASE === 'phase-development-server';
-  
   // Try to use environment variables first
-  const hasEnvVars = 
+  const hasEnvVars =
     process.env.NEXT_PUBLIC_FIREBASE_API_KEY &&
     process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN &&
     process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
@@ -45,33 +41,28 @@ function getFirebaseConfig() {
     }
   }
 
-  // Fallback for backward compatibility (will be removed after migration)
-  // During build or if env vars not set, use fallback values
-  if (!isBuildTime && typeof window === "undefined" && process.env.NODE_ENV === 'production') {
-    // Only throw error in production runtime (not build)
-    throw new Error(
-      "Firebase environment variables are not set. " +
-      "Please create a .env.local file with Firebase configuration. " +
-      "See .env.example for reference."
-    );
+  // In build or dev without Firebase env vars, use placeholders.
+  // Auth and Firestore operations will fail gracefully at runtime.
+  if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
+    // Warn once in browser console during dev
+    const w = globalThis as any;
+    if (!w.__fbWarnShown) {
+      w.__fbWarnShown = true;
+      console.warn(
+        "[Firebase] Environment variables not set. Auth/sync disabled. " +
+        "See .env.example for setup instructions."
+      );
+    }
   }
 
-  // Use fallback during build or development
-  if (!isBuildTime && typeof window !== "undefined") {
-    console.warn(
-      "Using fallback Firebase configuration. " +
-      "Please set up environment variables for production use."
-    );
-  }
-  
   return {
-    apiKey: "[REDACTED-FIREBASE-KEY]",
-    authDomain: "[REDACTED].firebaseapp.com",
-    projectId: "[REDACTED]",
-    storageBucket: "[REDACTED].appspot.com",
-    messagingSenderId: "[REDACTED]",
-    appId: "1:[REDACTED]:web:[REDACTED]",
-    measurementId: "[REDACTED]",
+    apiKey: "placeholder",
+    authDomain: "placeholder.firebaseapp.com",
+    projectId: "placeholder",
+    storageBucket: "placeholder.appspot.com",
+    messagingSenderId: "000000000000",
+    appId: "1:000000000000:web:placeholder",
+    measurementId: undefined,
   };
 }
 
@@ -79,10 +70,11 @@ const firebaseConfig = getFirebaseConfig();
 
 // Initialize Firebase (only if not already initialized)
 let app: FirebaseApp;
-if (getApps().length === 0) {
+const existingApps = getApps();
+if (existingApps.length === 0) {
   app = initializeApp(firebaseConfig);
 } else {
-  app = getApps()[0];
+  app = existingApps[0]!; // Non-null assertion: getApps() returns non-empty array if length > 0
 }
 
 // Initialize Firebase Authentication

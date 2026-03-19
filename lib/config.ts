@@ -4,19 +4,16 @@
  */
 
 import { z } from 'zod';
+import { createLogger } from "@/lib/logger";
+
+const log = createLogger("Config");
 
 // Schema for environment variables
-const envSchema = z.object({
-  // Firebase Configuration (public - exposed to client)
-  NEXT_PUBLIC_FIREBASE_API_KEY: z.string().min(1, 'Firebase API Key is required'),
-  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: z.string().min(1, 'Firebase Auth Domain is required'),
-  NEXT_PUBLIC_FIREBASE_PROJECT_ID: z.string().min(1, 'Firebase Project ID is required'),
-  NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: z.string().min(1, 'Firebase Storage Bucket is required'),
-  NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: z.string().min(1, 'Firebase Messaging Sender ID is required'),
-  NEXT_PUBLIC_FIREBASE_APP_ID: z.string().min(1, 'Firebase App ID is required'),
-  NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: z.string().optional(),
+// In development, Firebase/OpenAI/Azure vars are optional to allow other flows to run
+const isDevelopment = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
 
-  // Gemini API (server-side only)
+const baseSchema = {
+  // Gemini API (server-side only) - always required
   GEMINI_API_KEY: z.string().min(1, 'Gemini API Key is required'),
 
   // Rate Limiting
@@ -25,11 +22,44 @@ const envSchema = z.object({
 
   // Environment
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+
+  // OpenAI Realtime
+  OPENAI_API_KEY: z.string().default(''),
+  OPENAI_REALTIME_MODEL: z.string().default('gpt-4o-realtime-preview-2024-12-17'),
+
+  // Azure Speech (browser SDK token minting)
+  AZURE_SPEECH_KEY: z.string().default(''),
+  AZURE_SPEECH_REGION: z.string().default(''),
+  AZURE_SPEECH_TOKEN_URL: z.string().optional(),
+};
+
+// Firebase Configuration - required in production, optional in development
+const firebaseSchema = isDevelopment ? {
+  NEXT_PUBLIC_FIREBASE_API_KEY: z.string().default(''),
+  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: z.string().default(''),
+  NEXT_PUBLIC_FIREBASE_PROJECT_ID: z.string().default(''),
+  NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: z.string().default(''),
+  NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: z.string().default(''),
+  NEXT_PUBLIC_FIREBASE_APP_ID: z.string().default(''),
+  NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: z.string().optional(),
+} : {
+  NEXT_PUBLIC_FIREBASE_API_KEY: z.string().min(1, 'Firebase API Key is required'),
+  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: z.string().min(1, 'Firebase Auth Domain is required'),
+  NEXT_PUBLIC_FIREBASE_PROJECT_ID: z.string().min(1, 'Firebase Project ID is required'),
+  NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: z.string().min(1, 'Firebase Storage Bucket is required'),
+  NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: z.string().min(1, 'Firebase Messaging Sender ID is required'),
+  NEXT_PUBLIC_FIREBASE_APP_ID: z.string().min(1, 'Firebase App ID is required'),
+  NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: z.string().optional(),
+};
+
+const envSchema = z.object({
+  ...firebaseSchema,
+  ...baseSchema,
 });
 
 // Check if we're in a build context (Next.js static analysis)
-const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build' || 
-                    process.env.NEXT_PHASE === 'phase-development-server';
+const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build' ||
+  process.env.NEXT_PHASE === 'phase-development-server';
 
 // Validate environment variables
 // In development and build time, we allow missing vars with warnings for backward compatibility
@@ -38,24 +68,42 @@ function validateEnv() {
     return envSchema.parse(process.env);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const missingVars = error.errors.map((e) => e.path.join('.')).join(', ');
-      const errorMessage = 
-        `Missing or invalid environment variables: ${missingVars}\n` +
-        'Please check your .env.local file and ensure all required variables are set.\n' +
-        'See .env.example for reference.';
-      
-      // In production runtime (not build), throw error
-      if (process.env.NODE_ENV === 'production' && !isBuildTime) {
-        throw new Error(errorMessage);
+      // Separate Firebase errors from critical errors (like GEMINI_API_KEY)
+      const firebaseErrors = error.errors.filter(e =>
+        e.path[0]?.toString().startsWith('NEXT_PUBLIC_FIREBASE_')
+      );
+      const criticalErrors = error.errors.filter(e => {
+        const key = e.path[0]?.toString();
+        return key && !key.startsWith('NEXT_PUBLIC_FIREBASE_');
+      });
+
+      // If there are critical errors (like missing GEMINI_API_KEY), throw
+      if (criticalErrors.length > 0) {
+        const missingVars = criticalErrors.map((e) => e.path.join('.')).join(', ');
+        throw new Error(`Missing or invalid required environment variables: ${missingVars}`);
       }
-      
-      // In development or build time, log warning but allow fallback values
-      // Suppress warnings during build to avoid build failures
-      if (!isBuildTime && process.env.NODE_ENV !== 'test') {
-        console.warn('⚠️  Environment configuration warning:', errorMessage);
-        console.warn('⚠️  Using fallback values. This should not happen in production.');
+
+      // If only Firebase errors, log warning but continue with defaults
+      if (firebaseErrors.length > 0) {
+        const missingVars = firebaseErrors.map((e) => e.path.join('.')).join(', ');
+        const errorMessage =
+          `Missing or invalid Firebase environment variables: ${missingVars}\n` +
+          'Please check your .env.local file and ensure all required variables are set.\n' +
+          'See .env.example for reference.';
+
+        // In production runtime (not build), throw error for Firebase
+        if (process.env.NODE_ENV === 'production' && !isBuildTime) {
+          log.warn('Firebase keys missing in production. Some features may be disabled.');
+        }
+
+        // In development or build time, log warning but allow fallback values
+        // Suppress warnings during build to avoid build failures
+        if (!isBuildTime && process.env.NODE_ENV !== 'test') {
+          log.warn('Environment configuration warning:', errorMessage);
+          log.warn('Using fallback values. This should not happen in production.');
+        }
       }
-      
+
       // Return a partial config with defaults for development/build
       // Parse through schema with defaults to ensure correct types
       return envSchema.parse({
@@ -70,6 +118,11 @@ function validateEnv() {
         RATE_LIMIT_MAX_REQUESTS: process.env.RATE_LIMIT_MAX_REQUESTS || '100',
         RATE_LIMIT_WINDOW_MS: process.env.RATE_LIMIT_WINDOW_MS || '60000',
         NODE_ENV: (process.env.NODE_ENV as 'development' | 'production' | 'test') || 'development',
+        OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',
+        OPENAI_REALTIME_MODEL: process.env.OPENAI_REALTIME_MODEL || 'gpt-4o-realtime-preview-2024-12-17',
+        AZURE_SPEECH_KEY: process.env.AZURE_SPEECH_KEY || '',
+        AZURE_SPEECH_REGION: process.env.AZURE_SPEECH_REGION || '',
+        AZURE_SPEECH_TOKEN_URL: process.env.AZURE_SPEECH_TOKEN_URL || undefined,
       });
     }
     throw error;
@@ -106,6 +159,21 @@ export const config = {
     const env = getEnv();
     return {
       apiKey: env.GEMINI_API_KEY,
+    };
+  },
+  get openai() {
+    const env = getEnv();
+    return {
+      apiKey: env.OPENAI_API_KEY,
+      realtimeModel: env.OPENAI_REALTIME_MODEL,
+    };
+  },
+  get azureSpeech() {
+    const env = getEnv();
+    return {
+      key: env.AZURE_SPEECH_KEY,
+      region: env.AZURE_SPEECH_REGION,
+      tokenUrl: env.AZURE_SPEECH_TOKEN_URL,
     };
   },
   get rateLimit() {

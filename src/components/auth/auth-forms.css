@@ -133,3 +133,53 @@
   border-color: #444;
 }
 
+/* Language step in sign-up flow */
+.language-step {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.language-step-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-secondary, #666);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.language-step-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.language-step-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  border: 1.5px solid var(--border-color, #e0e0e0);
+  background: var(--bg-color, #fff);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+.language-step-item:hover {
+  border-color: var(--primary, #5b5fc7);
+}
+
+.language-step-item.selected {
+  border-color: var(--primary, #5b5fc7);
+  background: rgba(91, 95, 199, 0.06);
+}
+
+.language-step-flag { font-size: 1.1rem; }
+.language-step-name { flex: 1; text-align: left; font-weight: 500; }
+.language-step-check { color: var(--primary, #5b5fc7); font-weight: 700; }
+

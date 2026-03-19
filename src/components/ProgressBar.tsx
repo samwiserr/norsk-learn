@@ -1,14 +1,16 @@
 "use client";
 
-import { useContext } from "react";
-import { Context } from "@/src/context/Context";
+import { useSessionContext } from "@/src/context/SessionContext";
+import { useLanguageContext } from "@/src/context/LanguageContext";
 import "./ProgressBar.css";
 import { CEFR_LEVELS } from "@/lib/cefr";
 import { getCurrentCEFRLevel } from "@/lib/cefr-progress";
 import { getTranslation } from "@/lib/languages";
 
 const ProgressBar = () => {
-  const { userProgress, language } = useContext(Context);
+  const { activeSession } = useSessionContext();
+  const { language } = useLanguageContext();
+  const userProgress = activeSession?.progress ?? 0;
   const t = (key: any) => getTranslation(language, key);
   const percentage = Math.round(userProgress);
   const currentLevel = getCurrentCEFRLevel(userProgress);

@@ -1,7 +1,7 @@
 "use client";
 
-import { useContext } from "react";
-import { Context } from "@/src/context/Context";
+import { useSyncContext } from "@/src/context/SyncContext";
+import { useLanguageContext } from "@/src/context/LanguageContext";
 import { getTranslation, type Translations } from "@/lib/languages";
 import "./SyncStatus.css";
 
@@ -10,7 +10,8 @@ interface SyncStatusProps {
 }
 
 const SyncStatus = ({ className }: SyncStatusProps) => {
-  const { syncStatus, language } = useContext(Context);
+  const { syncStatus } = useSyncContext();
+  const { language } = useLanguageContext();
   const t = (key: keyof Translations) => getTranslation(language, key);
 
   if (!syncStatus || (!syncStatus.syncing && !syncStatus.error && syncStatus.pendingChanges === 0)) {

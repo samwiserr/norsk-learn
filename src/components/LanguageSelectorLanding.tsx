@@ -55,7 +55,15 @@ const LanguageSelectorLanding = ({
   }, [open]);
 
   return (
-    <div className="language-selector-landing" ref={dropdownRef} style={{ position: "relative", flexShrink: 0 }}>
+    <div 
+      className="language-selector-landing" 
+      ref={dropdownRef} 
+      style={{ 
+        position: "relative", 
+        flexShrink: 0,
+        zIndex: open ? 1001 : "auto",
+      }}
+    >
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
@@ -110,13 +118,15 @@ const LanguageSelectorLanding = ({
           className="language-selector-dropdown"
           style={{
             position: "absolute",
-            marginTop: "12px",
+            top: "100%",
+            left: 0,
+            marginTop: "8px",
             width: "240px",
             background: "#fff",
             borderRadius: "12px",
             boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
             border: "1px solid rgba(0, 0, 0, 0.1)",
-            zIndex: 1000,
+            zIndex: 1001,
             padding: "8px",
             maxHeight: "400px",
             overflowY: "auto",

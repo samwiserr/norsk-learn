@@ -1,3 +1,27 @@
+/* Language Selector Landing Styles */
+.language-selector-landing {
+  position: relative;
+  z-index: auto;
+}
+
+.language-selector-landing:has(.language-selector-dropdown) {
+  z-index: 1001;
+}
+
+.language-selector-dropdown {
+  position: absolute !important;
+  top: 100% !important;
+  left: 0 !important;
+  z-index: 1001 !important;
+  margin-top: 8px !important;
+}
+
+/* Ensure dropdown is not clipped */
+.level-selection-header,
+.header-actions {
+  overflow: visible !important;
+}
+
 /* Responsive styles for LanguageSelectorLanding component */
 @media (max-width: 1200px) {
   .language-selector-landing .language-selector-trigger {
@@ -10,6 +34,18 @@
   .language-selector-landing .language-selector-trigger {
     padding: 8px 14px !important;
     font-size: clamp(11px, 1.1vw + 0.5rem, 12px) !important;
+  }
+  
+  .language-selector-dropdown {
+    width: 220px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .language-selector-dropdown {
+    width: 200px !important;
+    right: 0 !important;
+    left: auto !important;
   }
 }
 

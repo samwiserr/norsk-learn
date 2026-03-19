@@ -73,8 +73,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           photoURL: currentUser.photoURL,
         });
       } else {
-        loadFromLocalStorage("norsk_user");
-        // Don't delete from localStorage - keep for reference
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("norsk_user");
+        }
       }
     });
 
@@ -119,8 +120,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setError(null);
       await logout();
       setUser(null);
-      // Clear user from localStorage
-      loadFromLocalStorage("norsk_user");
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("norsk_user");
+      }
     } catch (err) {
       setError(err as AuthError);
       throw err;

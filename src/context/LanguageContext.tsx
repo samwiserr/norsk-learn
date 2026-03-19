@@ -12,6 +12,7 @@ import { useLanguage } from "@/src/hooks/useLanguage";
 interface LanguageContextValue {
   language: LanguageCode;
   setLanguage: (lang: LanguageCode) => void;
+  isReady: boolean;
 }
 
 const LanguageContext = createContext<LanguageContextValue>(
@@ -27,12 +28,11 @@ export const useLanguageContext = () => {
 };
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-  const { language, setLanguage } = useLanguage();
+  const { language, setLanguage, isReady } = useLanguage();
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage }}>
+    <LanguageContext.Provider value={{ language, setLanguage, isReady }}>
       {children}
     </LanguageContext.Provider>
   );
 };
-

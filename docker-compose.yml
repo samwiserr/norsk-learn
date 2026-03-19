@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      # OpenAI (server-side only)
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_REALTIME_MODEL: ${OPENAI_REALTIME_MODEL:-gpt-4o-realtime-preview}
+
+      # Where Next.js can reach the Python service
+      PRON_SERVICE_URL: http://pron:8000
+
+      # Pass through other necessary env vars
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      NEXT_PUBLIC_FIREBASE_API_KEY: ${NEXT_PUBLIC_FIREBASE_API_KEY}
+      # ... add other firebase vars if needed for prod docker
+      AZURE_SPEECH_KEY: ${AZURE_SPEECH_KEY}
+      AZURE_SPEECH_REGION: ${AZURE_SPEECH_REGION}
+    depends_on:
+      - pron
+
+  pron:
+    build: ./pron
+    ports:
+      - "8000:8000"
+    environment:
+      AZURE_SPEECH_KEY: ${AZURE_SPEECH_KEY}
+      AZURE_SPEECH_REGION: ${AZURE_SPEECH_REGION}

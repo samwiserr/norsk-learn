@@ -1,6 +1,8 @@
 "use client";
 
 import React, { Component, ErrorInfo, ReactNode } from "react";
+import * as Sentry from "@sentry/nextjs";
+import { LanguageCode } from "@/lib/languages";
 
 interface Props {
   children: ReactNode;
@@ -34,15 +36,35 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("ErrorBoundary caught:", error, errorInfo);
+    // Error caught by boundary, Sentry reporting attempted below
+    
+    // Report to Sentry with React error info
+    if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_SENTRY_DSN) {
+      try {
+        // Try to get language from localStorage
+        const storedLanguage = localStorage.getItem('norsk_ui_language');
+        const language = storedLanguage as LanguageCode | null;
+        
+        if (language) {
+          Sentry.setContext('language', { code: language, locale: language });
+        }
+        
+        Sentry.captureException(error, {
+          contexts: {
+            react: {
+              componentStack: errorInfo.componentStack,
+            },
+          },
+        });
+      } catch (sentryError) {
+        // Sentry reporting failed silently
+      }
+    }
     
     // Call optional error handler
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
     }
-
-    // In production, you might want to log to an error reporting service
-    // Example: Sentry.captureException(error, { contexts: { react: errorInfo } });
   }
 
   handleReset = () => {

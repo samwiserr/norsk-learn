@@ -13,6 +13,9 @@ import {
 } from "@/lib/sync/offline-queue";
 import { getMultiTabSync } from "@/lib/sync/multi-tab-sync";
 import { SYNC_EVENT_TYPES } from "@/lib/constants";
+import { createLogger } from "@/lib/logger";
+
+const log = createLogger("SyncService");
 
 export interface SyncStatus {
   syncing: boolean;
@@ -68,7 +71,7 @@ export class SyncService {
         pendingChanges: getQueueStats().total,
       });
     } catch (error) {
-      console.error("Sync failed:", error);
+      log.error("Sync failed", error);
       addToOfflineQueue({
         type: "UPDATE_SESSION",
         sessionId: session.id,
@@ -108,4 +111,7 @@ export class SyncService {
     };
   }
 }
+
+
+
 

@@ -8,12 +8,16 @@ import {
   saveToLocalStorage,
   getUserMessageCount,
   incrementUserMessageCount,
+  resetUserMessageCount as resetMessageCount,
 } from "@/lib/storage";
 import { STORAGE_KEYS } from "@/lib/constants";
 import { Session } from "@/lib/sessions";
 import { User } from "firebase/auth";
 import { LanguageCode } from "@/lib/languages";
 import { CEFRLevel } from "@/lib/cefr";
+import { createLogger } from "@/lib/logger";
+
+const log = createLogger("StorageService");
 
 export class StorageService {
   /**
@@ -23,7 +27,7 @@ export class StorageService {
     try {
       return loadFromLocalStorage<string>(STORAGE_KEYS.CEFR_LEVEL);
     } catch (error) {
-      console.error("Error loading CEFR level:", error);
+      log.error("Error loading CEFR level", error);
       return null;
     }
   }
@@ -35,7 +39,7 @@ export class StorageService {
     try {
       saveToLocalStorage(STORAGE_KEYS.CEFR_LEVEL, level);
     } catch (error) {
-      console.error("Error saving CEFR level:", error);
+      log.error("Error saving CEFR level", error);
     }
   }
 
@@ -46,7 +50,7 @@ export class StorageService {
     try {
       return loadFromLocalStorage<string>(STORAGE_KEYS.UI_LANGUAGE);
     } catch (error) {
-      console.error("Error loading language:", error);
+      log.error("Error loading language", error);
       return null;
     }
   }
@@ -58,7 +62,7 @@ export class StorageService {
     try {
       saveToLocalStorage(STORAGE_KEYS.UI_LANGUAGE, language);
     } catch (error) {
-      console.error("Error saving language:", error);
+      log.error("Error saving language", error);
     }
   }
 
@@ -69,7 +73,7 @@ export class StorageService {
     try {
       return loadFromLocalStorage<"light" | "dark" | "system">(STORAGE_KEYS.THEME);
     } catch (error) {
-      console.error("Error loading theme:", error);
+      log.error("Error loading theme", error);
       return null;
     }
   }
@@ -81,7 +85,7 @@ export class StorageService {
     try {
       saveToLocalStorage(STORAGE_KEYS.THEME, theme);
     } catch (error) {
-      console.error("Error saving theme:", error);
+      log.error("Error saving theme", error);
     }
   }
 
@@ -92,7 +96,7 @@ export class StorageService {
     try {
       return loadFromLocalStorage<Session[]>(STORAGE_KEYS.SESSIONS) || [];
     } catch (error) {
-      console.error("Error loading sessions:", error);
+      log.error("Error loading sessions", error);
       return [];
     }
   }
@@ -104,10 +108,9 @@ export class StorageService {
     try {
       saveToLocalStorage(STORAGE_KEYS.SESSIONS, sessions);
     } catch (error) {
-      console.error("Error saving sessions:", error);
-      // Handle quota exceeded error
+      log.error("Error saving sessions", error);
       if (error instanceof DOMException && error.name === "QuotaExceededError") {
-        console.warn("Storage quota exceeded. Consider cleaning up old sessions.");
+        log.warn("Storage quota exceeded. Consider cleaning up old sessions.");
       }
     }
   }
@@ -119,7 +122,7 @@ export class StorageService {
     try {
       return loadFromLocalStorage<User>(STORAGE_KEYS.USER);
     } catch (error) {
-      console.error("Error loading user:", error);
+      log.error("Error loading user", error);
       return null;
     }
   }
@@ -138,7 +141,7 @@ export class StorageService {
         });
       }
     } catch (error) {
-      console.error("Error saving user:", error);
+      log.error("Error saving user", error);
     }
   }
 
@@ -149,7 +152,7 @@ export class StorageService {
     try {
       return getUserMessageCount();
     } catch (error) {
-      console.error("Error getting user message count:", error);
+      log.error("Error getting user message count", error);
       return 0;
     }
   }
@@ -161,8 +164,42 @@ export class StorageService {
     try {
       return incrementUserMessageCount();
     } catch (error) {
-      console.error("Error incrementing user message count:", error);
+      log.error("Error incrementing user message count", error);
       return 0;
+    }
+  }
+
+  /**
+   * Reset user message count
+   */
+  static resetUserMessageCount(): void {
+    try {
+      resetMessageCount();
+    } catch (error) {
+      log.error("Error resetting user message count", error);
+    }
+  }
+
+  /**
+   * Load high contrast mode setting
+   */
+  static loadHighContrastMode(): boolean {
+    try {
+      return loadFromLocalStorage<boolean>(STORAGE_KEYS.HIGH_CONTRAST) ?? false;
+    } catch (error) {
+      log.error("Error loading high contrast setting", error);
+      return false;
+    }
+  }
+
+  /**
+   * Save high contrast mode setting
+   */
+  static saveHighContrastMode(enabled: boolean): void {
+    try {
+      saveToLocalStorage(STORAGE_KEYS.HIGH_CONTRAST, enabled);
+    } catch (error) {
+      log.error("Error saving high contrast setting", error);
     }
   }
 }
