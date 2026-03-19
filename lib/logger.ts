@@ -50,6 +50,8 @@ function redactSecrets(args: unknown[]): unknown[] {
 
 function getMinLevel(): LogLevel {
   if (typeof process !== "undefined") {
+    const override = process.env.LOG_LEVEL as LogLevel | undefined;
+    if (override && LEVEL_PRIORITY[override] !== undefined) return override;
     if (process.env.NODE_ENV === "production") return "warn";
     if (process.env.NODE_ENV === "test") return "error";
   }

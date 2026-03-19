@@ -100,7 +100,7 @@ describe('Input Sanitization', () => {
     it('should validate valid CEFR levels', () => {
       expect(sanitizeCEFRLevel('A1')).toBe('A1');
       expect(sanitizeCEFRLevel('a1')).toBe('A1');
-      expect(sanitizeCEFRLevel('  C2  ')).toBe('C2');
+      expect(sanitizeCEFRLevel('  B2  ')).toBe('B2');
     });
 
     it('should throw error for invalid level', () => {

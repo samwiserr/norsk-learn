@@ -16,7 +16,7 @@ describe("createLogger", () => {
   });
 
   it("creates a tagged logger", () => {
-    Object.defineProperty(process.env, "NODE_ENV", { value: "development", writable: true });
+    process.env.LOG_LEVEL = "debug";
     const log = createLogger("TestTag");
     log.info("hello");
     expect(console.info).toHaveBeenCalledWith(
@@ -26,7 +26,7 @@ describe("createLogger", () => {
   });
 
   it("redacts objects with secret-like keys", () => {
-    Object.defineProperty(process.env, "NODE_ENV", { value: "development", writable: true });
+    process.env.LOG_LEVEL = "debug";
     const log = createLogger("Secrets");
     log.info({ api_key: "super-secret-12345", name: "visible" });
     const call = (console.info as jest.Mock).mock.calls[0];
@@ -34,7 +34,8 @@ describe("createLogger", () => {
   });
 
   it("suppresses debug/info in production", () => {
-    Object.defineProperty(process.env, "NODE_ENV", { value: "production", writable: true });
+    process.env.NODE_ENV = "production";
+    delete process.env.LOG_LEVEL;
     const log = createLogger("Prod");
     log.debug("should be hidden");
     log.info("also hidden");
