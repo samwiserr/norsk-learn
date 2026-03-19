@@ -1,17 +1,16 @@
 "use client";
 
-import { useContext, useState, useEffect } from "react";
+import { useContext } from "react";
 import { useRouter } from "next/navigation";
 import { AuthContext } from "@/src/context/AuthContext";
-import { Context } from "@/src/context/Context";
-import { getTranslation, type Translations, DEFAULT_LANGUAGE } from "@/lib/languages";
+import { useLanguageContext } from "@/src/context/LanguageContext";
+import { getTranslation, type Translations } from "@/lib/languages";
 import "./auth-buttons.css";
 
 const AuthButtons = () => {
   const router = useRouter();
   const { user } = useContext(AuthContext);
-  const { language } = useContext(Context);
-  const [showAuthModal, setShowAuthModal] = useState(false);
+  const { language } = useLanguageContext();
   const t = (key: keyof Translations) => getTranslation(language, key);
 
   if (user) {
@@ -31,7 +30,7 @@ const AuthButtons = () => {
             />
           ) : (
             <span className="user-initial">
-              {(user.displayName || user.email || "A")[0].toUpperCase()}
+              {(((user.displayName || user.email || "A").trim().charAt(0) || "A").toUpperCase())}
             </span>
           )}
           <span className="account-text" suppressHydrationWarning>{t("account")}</span>

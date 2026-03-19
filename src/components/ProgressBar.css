@@ -1,10 +1,10 @@
 .progress-bar-container {
   padding: 16px 24px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid #E5E7EB; /* Borders */
   position: sticky;
   top: 64px;
   z-index: 20;
-  background: transparent;
+  background: #F7F8FA; /* Nordic calm background */
 }
 
 .progress-bar-header {
@@ -12,18 +12,18 @@
   justify-content: space-between;
   font-size: 14px;
   margin-bottom: 6px;
-  color: #374151;
+  color: #1F2937; /* Primary text */
 }
 
 .progress-bar-header strong {
-  color: #667eea;
+  color: #2563EB; /* Accent blue */
   font-weight: 600;
 }
 
 .progress-bar-wrapper {
   position: relative;
   height: 16px;
-  background-color: #e2e6eb;
+  background-color: #E5E7EB; /* Base bar */
   border-radius: 999px;
   overflow: visible;
   margin-bottom: 28px;
@@ -33,9 +33,45 @@
   position: absolute;
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, #14b8a6 0%, #0d9488 100%);
-  transition: width 0.7s ease;
+  background: #2563EB; /* Current level fill - accent blue */
+  transition: width 0.7s ease, background-color 0.5s ease;
   z-index: 0;
+}
+
+/* Upward movement - fade toward success green */
+.progress-bar-fill.moving-up {
+  background: linear-gradient(90deg, #2563EB 0%, #16A34A 100%); /* Fade to success green */
+  animation: progressUp 1s ease-out;
+}
+
+/* Downward movement - fade toward error red */
+.progress-bar-fill.moving-down {
+  background: linear-gradient(90deg, #2563EB 0%, #DC2626 100%); /* Fade to error red */
+  animation: progressDown 1s ease-out;
+}
+
+@keyframes progressUp {
+  0% {
+    background: #2563EB;
+  }
+  50% {
+    background: #1E8E3E; /* Midpoint between blue and green */
+  }
+  100% {
+    background: #16A34A; /* Success green */
+  }
+}
+
+@keyframes progressDown {
+  0% {
+    background: #2563EB;
+  }
+  50% {
+    background: #B91C1C; /* Midpoint between blue and red */
+  }
+  100% {
+    background: #DC2626; /* Error red */
+  }
 }
 
 .progress-bar-markers {
@@ -53,29 +89,29 @@
   transform: translate(-50%, -50%);
   width: 28px;
   height: 28px;
-  background-color: #e2e6eb;
-  border: 2px solid #b0b0b0;
+  background-color: #E5E7EB; /* Base bar color */
+  border: 2px solid #D1D5DB;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 11px;
   font-weight: 700;
-  color: #666;
+  color: #6B7280; /* Secondary text */
   z-index: 2;
   transition: all 0.3s ease;
 }
 
 .progress-marker.completed {
-  background-color: #14b8a6;
-  border-color: #14b8a6;
+  background-color: #16A34A; /* Success green */
+  border-color: #16A34A;
   color: white;
 }
 
 .progress-marker.active {
-  background-color: #667eea;
-  border-color: #667eea;
-  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+  background-color: #2563EB; /* Accent blue */
+  border-color: #2563EB;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
   color: white;
 }
 

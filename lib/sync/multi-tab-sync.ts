@@ -23,7 +23,6 @@ export class MultiTabSync {
     this.channel = new BroadcastChannel(SYNC_CHANNEL);
     this.channel.onmessage = (event) => this.handleMessage(event);
     
-    // Listen for page visibility changes to request sync
     document.addEventListener("visibilitychange", () => {
       if (!document.hidden) {
         this.broadcast({
@@ -68,11 +67,15 @@ export class MultiTabSync {
    */
   broadcast(message: SyncMessage): void {
     if (this.channel) {
-      this.channel.postMessage({
-        ...message,
-        timestamp: Date.now(),
-        source: this.tabId,
-      });
+      try {
+        this.channel.postMessage({
+          ...message,
+          timestamp: Date.now(),
+          source: this.tabId,
+        });
+      } catch {
+        // Channel may have been closed during page unload
+      }
     }
   }
 

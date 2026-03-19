@@ -5,6 +5,9 @@
 
 import { Session, validateSession } from "@/lib/sessions";
 import { StorageService } from "@/src/services/storageService";
+import { createLogger } from "@/lib/logger";
+
+const log = createLogger("SessionRepo");
 
 export class SessionRepository {
   /**
@@ -36,7 +39,7 @@ export class SessionRepository {
    */
   static save(session: Session): void {
     if (!validateSession(session)) {
-      console.error("Invalid session:", session);
+      log.error("Invalid session", { sessionId: (session as any)?.id });
       return;
     }
 
@@ -68,7 +71,7 @@ export class SessionRepository {
     const sessions = this.getAll();
     if (sessions.length === 0) return null;
 
-    return sessions.sort((a, b) => b.updatedAt - a.updatedAt)[0];
+    return [...sessions].sort((a, b) => b.updatedAt - a.updatedAt)[0] ?? null;
   }
 
   /**
@@ -76,6 +79,16 @@ export class SessionRepository {
    */
   static getAllSorted(): Session[] {
     return this.getAll().sort((a, b) => b.updatedAt - a.updatedAt);
+  }
+
+  /**
+   * Clear all sessions
+   */
+  static clearAll(): void {
+    log.info("Clearing all sessions");
+    StorageService.saveSessions([]);
+    const verify = this.getAll();
+    log.debug("Verification - sessions after clear", { remaining: verify.length });
   }
 }
 

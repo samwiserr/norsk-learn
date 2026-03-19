@@ -34,5 +34,12 @@ export class UserRepository {
   static incrementUserMessageCount(): number {
     return StorageService.incrementUserMessageCount();
   }
+
+  /**
+   * Reset user message count
+   */
+  static resetUserMessageCount(): void {
+    StorageService.resetUserMessageCount();
+  }
 }
 

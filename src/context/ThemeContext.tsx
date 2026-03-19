@@ -11,6 +11,8 @@ import { useTheme, Theme } from "@/src/hooks/useTheme";
 interface ThemeContextValue {
   theme: Theme;
   setTheme: (theme: Theme) => void;
+  highContrastMode: boolean;
+  setHighContrastMode: (value: boolean) => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue>({} as ThemeContextValue);
@@ -24,10 +26,10 @@ export const useThemeContext = () => {
 };
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, highContrastMode, setHighContrastMode } = useTheme();
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme }}>
+    <ThemeContext.Provider value={{ theme, setTheme, highContrastMode, setHighContrastMode }}>
       {children}
     </ThemeContext.Provider>
   );

@@ -5,8 +5,9 @@
 
 /**
  * Authentication constants
+ * Set to a very high number to effectively suspend the limit
  */
-export const AUTH_REQUIRED_MESSAGE_COUNT = 5;
+export const AUTH_REQUIRED_MESSAGE_COUNT = 999999;
 export const AUTH_WARNING_MESSAGE_COUNT = 3;
 
 /**
@@ -36,6 +37,7 @@ export const STORAGE_KEYS = {
   SESSIONS: "norsk_sessions",
   USER: "norsk_user",
   USER_MESSAGE_COUNT: "norsk_user_message_count",
+  HIGH_CONTRAST: "norsk_high_contrast",
 } as const;
 
 /**
@@ -43,6 +45,7 @@ export const STORAGE_KEYS = {
  */
 export const SESSION_STORAGE_KEYS = {
   FROM_LEVEL_SELECTION: "norsk_from_level_selection",
+  RETURN_PATH: "norsk_return_path",
 } as const;
 
 /**

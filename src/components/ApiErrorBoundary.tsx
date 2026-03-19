@@ -1,7 +1,6 @@
 "use client";
 
 import React, { Component, ErrorInfo, ReactNode } from "react";
-import ErrorBoundary from "./ErrorBoundary";
 
 interface Props {
   children: ReactNode;
@@ -32,8 +31,8 @@ class ApiErrorBoundary extends Component<Props, State> {
     };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("ApiErrorBoundary caught:", error, errorInfo);
+  componentDidCatch(_error: Error, _errorInfo: ErrorInfo) {
+    // Error caught by boundary, rendered in fallback UI
   }
 
   handleReset = () => {
@@ -82,4 +81,7 @@ class ApiErrorBoundary extends Component<Props, State> {
 }
 
 export default ApiErrorBoundary;
+
+
+
 

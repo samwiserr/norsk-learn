@@ -14,6 +14,9 @@ import { initializeProgress, clampProgress } from "@/lib/cefr-progress";
 import { SessionRepository } from "@/src/repositories/sessionRepository";
 import { ApiService } from "@/src/services/apiService";
 import { LanguageCode } from "@/lib/languages";
+import { createLogger } from "@/lib/logger";
+
+const log = createLogger("SessionService");
 
 export class SessionService {
   /**
@@ -51,7 +54,12 @@ export class SessionService {
     language: LanguageCode
   ): Promise<Message | null> {
     try {
+      log.info("Generating welcome message", { sessionId, cefrLevel, language });
       const response = await ApiService.getInitialQuestion(cefrLevel, language);
+      log.debug("Received API response", {
+        hasWelcomeMessage: !!response.welcomeMessage,
+        hasFirstQuestion: !!response.firstQuestion,
+      });
 
       let welcomeContent = response.welcomeMessage || "";
       const firstQuestion = response.firstQuestion || "";
@@ -73,15 +81,50 @@ export class SessionService {
         }
       }
 
-      return {
+      // Fallback if API didn't provide content
+      if (!welcomeContent.trim()) {
+        const levelQuestions: Record<CEFRLevel, string> = {
+          A1: "Hei, hva heter du?",
+          A2: "Hvor bor du, og hvem bor du sammen med?",
+          B1: "Kan du fortelle meg om en interessant opplevelse du hadde nylig?",
+          B2: "Hva er din mening om viktigheten av å lære et nytt språk?",
+        };
+        const question = levelQuestions[cefrLevel] || levelQuestions.A1;
+        welcomeContent = `Welcome! You have selected CEFR level ${cefrLevel}. Please answer the following question in Norwegian Bokmål:\n\n${question}`;
+        log.info("Using fallback welcome message");
+      }
+
+      const message: Message = {
         id: `msg_${Date.now()}_welcome`,
         role: "assistant",
         content: welcomeContent.trim(),
         timestamp: Date.now(),
       };
+
+      log.debug("Generated welcome message", { length: message.content.length });
+      return message;
     } catch (error) {
-      console.error("Welcome message error", error);
-      return null;
+      log.error("Welcome message error", error, {
+        message: error instanceof Error ? error.message : String(error),
+      });
+
+      // Return fallback message instead of null
+      const levelQuestions: Record<CEFRLevel, string> = {
+        A1: "Hei, hva heter du?",
+        A2: "Hvor bor du, og hvem bor du sammen med?",
+        B1: "Kan du fortelle meg om en interessant opplevelse du hadde nylig?",
+        B2: "Hva er din mening om viktigheten av å lære et nytt språk?",
+      };
+      const question = levelQuestions[cefrLevel] || levelQuestions.A1;
+      const fallbackContent = `Welcome! You have selected CEFR level ${cefrLevel}. Please answer the following question in Norwegian Bokmål:\n\n${question}`;
+
+      log.info("Returning fallback welcome message due to error");
+      return {
+        id: `msg_${Date.now()}_welcome_fallback`,
+        role: "assistant",
+        content: fallbackContent,
+        timestamp: Date.now(),
+      };
     }
   }
 

@@ -5,12 +5,15 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Session, Message } from "@/lib/sessions";
+import { Session } from "@/lib/sessions";
 import { CEFRLevel, isValidCEFRLevel } from "@/lib/cefr";
 import { SessionRepository } from "@/src/repositories/sessionRepository";
 import { SessionService } from "@/src/services/sessionService";
 import { StorageService } from "@/src/services/storageService";
 import { WELCOME_MESSAGE_DELAY } from "@/lib/constants";
+import { createLogger } from "@/lib/logger";
+
+const log = createLogger("SessionManagement");
 
 export function useSessionManagement() {
   const router = useRouter();
@@ -19,17 +22,80 @@ export function useSessionManagement() {
   const [activeSession, setActiveSession] = useState<Session | null>(null);
   const [sessionsLoaded, setSessionsLoaded] = useState(false);
 
-  // Load sessions on mount
+  // Track previous language to detect changes
+  // Initialize from sessionStorage to persist across page reloads
+  const previousLanguageRef = useRef<string | null>(
+    typeof window !== "undefined"
+      ? sessionStorage.getItem("norsk_previous_language")
+      : null
+  );
+
+  // Load sessions on mount and when language changes
   useEffect(() => {
+    const currentLanguage = typeof window !== "undefined" 
+      ? StorageService.loadLanguage() 
+      : null;
+    
+    // Get previous language from sessionStorage (persists across page reloads)
+    const previousLanguage = typeof window !== "undefined"
+      ? sessionStorage.getItem("norsk_previous_language")
+      : previousLanguageRef.current;
+    
+    // Check if language changed (compare with stored previous language)
+    const languageChanged = previousLanguage !== null && 
+                            previousLanguage !== currentLanguage &&
+                            currentLanguage !== null;
+    
+    if (languageChanged) {
+      log.info("Language changed detected, clearing sessions", {
+        previousLanguage,
+        currentLanguage,
+        sessionCount: SessionRepository.getAll().length,
+      });
+      // Language changed - clear all sessions
+      SessionRepository.clearAll();
+      setSessions([]);
+      setActiveSessionId(null);
+      setActiveSession(null);
+      
+      // Update stored previous language
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("norsk_previous_language", currentLanguage);
+      }
+      previousLanguageRef.current = currentLanguage;
+      setSessionsLoaded(true);
+      return;
+    }
+    
+    // Normal load - update stored previous language if not set
+    if (typeof window !== "undefined" && currentLanguage) {
+      if (!sessionStorage.getItem("norsk_previous_language")) {
+        sessionStorage.setItem("norsk_previous_language", currentLanguage);
+      }
+    }
+    
+    // Normal load
     const storedSessions = SessionRepository.getAll();
+    log.debug("Loading sessions on mount", {
+      count: storedSessions.length,
+      sessionIds: storedSessions.map(s => s.id),
+      sessionTitles: storedSessions.map(s => s.title),
+      currentLanguage,
+      previousLanguage,
+    });
     setSessions(storedSessions);
     setSessionsLoaded(true);
+    previousLanguageRef.current = currentLanguage;
+    
     if (storedSessions.length > 0) {
       const latest = SessionRepository.getLatest();
       if (latest) {
+        log.debug("Setting latest session as active", { sessionId: latest.id });
         setActiveSessionId(latest.id);
         setActiveSession(latest);
       }
+    } else {
+      log.debug("No sessions found, starting fresh");
     }
   }, []);
 
@@ -139,11 +205,22 @@ export function useSessionManagement() {
 
   const updateSession = useCallback((id: string, data: Partial<Session>) => {
     setSessions((prev) => {
-      const updated = prev.map((session) =>
-        session.id === id
-          ? { ...session, ...data, updatedAt: Date.now() }
-          : session
-      );
+      const existing = prev.find((s) => s.id === id);
+      let updated: Session[];
+      
+      if (existing) {
+        // Update existing session
+        updated = prev.map((session) =>
+          session.id === id
+            ? { ...session, ...data, updatedAt: Date.now() }
+            : session
+        );
+      } else {
+        // Add new session if it doesn't exist
+        const newSession = { ...data, id, updatedAt: Date.now() } as Session;
+        updated = [...prev, newSession];
+      }
+      
       SessionRepository.saveAll(updated);
       const current = updated.find((session) => session.id === id);
       if (current && activeSessionId === id) {
@@ -152,6 +229,29 @@ export function useSessionManagement() {
       return updated;
     });
   }, [activeSessionId, setActiveSession]);
+
+  const replaceAllSessions = useCallback((newSessions: Session[]) => {
+    log.info("Replacing all sessions", {
+      oldCount: sessions.length,
+      newCount: newSessions.length,
+      newSessionIds: newSessions.map(s => s.id),
+    });
+    setSessions(newSessions);
+    SessionRepository.saveAll(newSessions);
+    if (newSessions.length > 0) {
+      const latest = [...newSessions].sort((a, b) => b.updatedAt - a.updatedAt)[0];
+      if (latest) {
+        setActiveSessionId(latest.id);
+        setActiveSession(latest);
+      } else {
+        setActiveSessionId(null);
+        setActiveSession(null);
+      }
+    } else {
+      setActiveSessionId(null);
+      setActiveSession(null);
+    }
+  }, [sessions]);
 
   return {
     sessions,
@@ -164,6 +264,7 @@ export function useSessionManagement() {
     renameSession,
     updateSession,
     setActiveSessionId,
+    replaceAllSessions,
   };
 }
 

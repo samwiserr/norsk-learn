@@ -1,0 +1,42 @@
+/* Success states */
+.success-text {
+  color: #16A34A; /* Success green */
+}
+
+.success-bg {
+  background-color: rgba(22, 163, 74, 0.1);
+}
+
+.success-border {
+  border-color: #16A34A;
+}
+
+/* Error states */
+.error-text {
+  color: #DC2626; /* Error red */
+}
+
+.error-bg {
+  background-color: rgba(220, 38, 38, 0.1);
+}
+
+.error-border {
+  border-color: #DC2626;
+}
+
+/* Grammar correction highlight - subtle */
+.correction-highlight {
+  background-color: rgba(220, 38, 38, 0.1);
+  border-bottom: 2px solid #DC2626;
+  padding: 0 2px;
+}
+
+/* Praise text for "Bra!" messages */
+.praise-text {
+  color: #16A34A; /* Success green */
+  font-weight: 600;
+}
+
+
+
+

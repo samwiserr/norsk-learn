@@ -1,9 +1,7 @@
-/**
- * Simple in-memory rate limiting
- * For production, consider using Redis or a dedicated rate limiting service
- */
-
 import { config } from './config';
+import { createLogger } from './logger';
+
+const log = createLogger("RateLimit");
 
 interface RateLimitResult {
   success: boolean;
@@ -11,100 +9,112 @@ interface RateLimitResult {
   retryAfter?: number;
 }
 
-// In-memory store for rate limiting
-// In production, this should be replaced with Redis or similar
-const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
+// ── In-memory fallback ─────────────────────────────────────────────────
 
-// Clean up old entries periodically
+const memStore = new Map<string, { count: number; resetTime: number }>();
+
 setInterval(() => {
   const now = Date.now();
-  for (const [key, value] of rateLimitStore.entries()) {
-    if (now > value.resetTime) {
-      rateLimitStore.delete(key);
-    }
+  for (const [key, value] of memStore.entries()) {
+    if (now > value.resetTime) memStore.delete(key);
   }
-}, 60000); // Clean up every minute
+}, 60_000);
 
-/**
- * Check if a request should be rate limited
- * @param identifier - Unique identifier (IP address, user ID, etc.)
- * @returns Rate limit result
- */
-export async function rateLimit(identifier: string): Promise<RateLimitResult> {
+async function rateLimitMemory(identifier: string): Promise<RateLimitResult> {
   const now = Date.now();
   const windowMs = config.rateLimit.windowMs;
   const maxRequests = config.rateLimit.maxRequests;
 
-  // Get or create rate limit entry
-  let entry = rateLimitStore.get(identifier);
-
-  // If no entry or window has expired, create new entry
+  let entry = memStore.get(identifier);
   if (!entry || now > entry.resetTime) {
-    entry = {
-      count: 1,
-      resetTime: now + windowMs,
-    };
-    rateLimitStore.set(identifier, entry);
-    return {
-      success: true,
-      remaining: maxRequests - 1,
-    };
+    entry = { count: 1, resetTime: now + windowMs };
+    memStore.set(identifier, entry);
+    return { success: true, remaining: maxRequests - 1 };
   }
 
-  // Increment count
   entry.count++;
-
-  // Check if limit exceeded
   if (entry.count > maxRequests) {
-    const retryAfter = Math.ceil((entry.resetTime - now) / 1000);
     return {
       success: false,
       remaining: 0,
-      retryAfter,
+      retryAfter: Math.ceil((entry.resetTime - now) / 1000),
     };
   }
-
-  // Update store
-  rateLimitStore.set(identifier, entry);
-
-  return {
-    success: true,
-    remaining: maxRequests - entry.count,
-  };
+  memStore.set(identifier, entry);
+  return { success: true, remaining: maxRequests - entry.count };
 }
 
-/**
- * Reset rate limit for an identifier (useful for testing)
- * @param identifier - Identifier to reset
- */
+// ── Redis backend (Upstash) ────────────────────────────────────────────
+
+let redisClient: import("@upstash/redis").Redis | null = null;
+
+function getRedis(): import("@upstash/redis").Redis | null {
+  if (redisClient) return redisClient;
+
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return null;
+
+  try {
+    const { Redis } = require("@upstash/redis") as typeof import("@upstash/redis");
+    redisClient = new Redis({ url, token });
+    return redisClient;
+  } catch {
+    log.warn("Failed to initialize Upstash Redis, falling back to in-memory");
+    return null;
+  }
+}
+
+async function rateLimitRedis(identifier: string): Promise<RateLimitResult> {
+  const redis = getRedis();
+  if (!redis) return rateLimitMemory(identifier);
+
+  const windowMs = config.rateLimit.windowMs;
+  const maxRequests = config.rateLimit.maxRequests;
+  const key = `rl:${identifier}`;
+  const windowSec = Math.ceil(windowMs / 1000);
+
+  try {
+    const count = await redis.incr(key);
+    if (count === 1) {
+      await redis.expire(key, windowSec);
+    }
+
+    if (count > maxRequests) {
+      const ttl = await redis.ttl(key);
+      return { success: false, remaining: 0, retryAfter: ttl > 0 ? ttl : windowSec };
+    }
+
+    return { success: true, remaining: maxRequests - count };
+  } catch (err) {
+    log.error("Redis rate limit error, falling back to in-memory", err);
+    return rateLimitMemory(identifier);
+  }
+}
+
+// ── Public API ─────────────────────────────────────────────────────────
+
+export async function rateLimit(identifier: string): Promise<RateLimitResult> {
+  const redis = getRedis();
+  return redis ? rateLimitRedis(identifier) : rateLimitMemory(identifier);
+}
+
 export function resetRateLimit(identifier: string): void {
-  rateLimitStore.delete(identifier);
+  memStore.delete(identifier);
+  const redis = getRedis();
+  if (redis) redis.del(`rl:${identifier}`).catch(() => {});
 }
 
-/**
- * Get current rate limit status for an identifier
- * @param identifier - Identifier to check
- * @returns Current rate limit status
- */
 export function getRateLimitStatus(identifier: string): {
   count: number;
   remaining: number;
   resetTime: number;
 } | null {
-  const entry = rateLimitStore.get(identifier);
-  if (!entry) {
-    return null;
-  }
-
-  const now = Date.now();
-  if (now > entry.resetTime) {
-    return null;
-  }
-
+  const entry = memStore.get(identifier);
+  if (!entry || Date.now() > entry.resetTime) return null;
   return {
     count: entry.count,
     remaining: Math.max(0, config.rateLimit.maxRequests - entry.count),
     resetTime: entry.resetTime,
   };
 }
-

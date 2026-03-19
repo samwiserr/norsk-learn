@@ -1,8 +1,8 @@
 "use client";
 
-import { useContext, useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import type { Session } from "@/lib/sessions";
-import { Context } from "@/src/context/Context";
+import { useSessionContext } from "@/src/context/SessionContext";
 import "./SessionItem.css";
 
 interface Props {
@@ -12,7 +12,7 @@ interface Props {
 }
 
 const SessionItem = ({ session, isActive, onClick }: Props) => {
-  const { switchSession, renameSession, deleteSession } = useContext(Context);
+  const { switchSession, renameSession, deleteSession } = useSessionContext();
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -63,6 +63,8 @@ const SessionItem = ({ session, isActive, onClick }: Props) => {
         document.removeEventListener("mousedown", handleClickOutside);
       };
     }
+
+    return;
   }, [showMenu]);
 
   return (

@@ -134,7 +134,7 @@ export function sanitizeCEFRLevel(level: unknown): string {
     throw new Error('CEFR level must be a string');
   }
 
-  const validLevels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+  const validLevels = ['A1', 'A2', 'B1', 'B2'];
   const upperLevel = level.toUpperCase().trim();
 
   if (!validLevels.includes(upperLevel)) {
@@ -163,4 +163,7 @@ export function sanitizeLanguageCode(code: unknown): string {
 
   return lowerCode;
 }
+
+
+
 

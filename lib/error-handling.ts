@@ -1,3 +1,9 @@
+import * as Sentry from "@sentry/nextjs";
+import { LanguageCode } from "@/lib/languages";
+import { createLogger } from "@/lib/logger";
+
+const log = createLogger("ErrorHandling");
+
 export enum ErrorType {
   NETWORK = 'NETWORK',
   API = 'API',
@@ -139,10 +145,46 @@ export const getErrorMessage = (error: AppError, language: string = 'en'): strin
   return messages[language] || messages.en || error.message;
 };
 
+// Helper to report error to Sentry with language context
+// Works on both client and server
+export const reportErrorToSentry = (error: Error | AppError, language?: LanguageCode) => {
+  if (Sentry && process.env.NEXT_PUBLIC_SENTRY_DSN) {
+    try {
+      if (language) {
+        Sentry.setContext('language', { code: language, locale: language });
+      }
+      Sentry.captureException(error);
+    } catch (sentryError) {
+      log.error('Failed to report to Sentry:', sentryError);
+    }
+  }
+};
+
 // Helper to create AppError from various error types
-export const createAppError = (error: unknown): AppError => {
+export const createAppError = (error: unknown, language?: LanguageCode): AppError => {
   if (error instanceof AppError) {
     return error;
+  }
+
+  // Check for Google Generative AI specific errors
+  if (error instanceof Error) {
+    // Check for API key errors
+    if (error.message.includes('API_KEY') || error.message.includes('api key') || error.message.includes('API key')) {
+      log.error('API key error detected:', error.message);
+      return new AppError(ErrorType.API, `API key error: ${error.message}`, 'API_KEY_ERROR', false, error);
+    }
+    
+    // Check for quota/rate limit errors
+    if (error.message.includes('quota') || error.message.includes('rate limit') || error.message.includes('429')) {
+      log.error('Quota/rate limit error detected:', error.message);
+      return new AppError(ErrorType.API, `Quota exceeded: ${error.message}`, 'QUOTA_EXCEEDED', true, error);
+    }
+    
+    // Check for permission errors
+    if (error.message.includes('permission') || error.message.includes('403') || error.message.includes('forbidden')) {
+      log.error('Permission error detected:', error.message);
+      return new AppError(ErrorType.AUTH, `Permission denied: ${error.message}`, 'PERMISSION_DENIED', false, error);
+    }
   }
 
   if (error instanceof TypeError && error.message.includes('fetch')) {
@@ -160,9 +202,15 @@ export const createAppError = (error: unknown): AppError => {
   }
 
   if (error instanceof Error) {
-    return new AppError(ErrorType.UNKNOWN, error.message, 'UNKNOWN_ERROR', false, error);
+    log.error('Converting Error to AppError:', error.message);
+    const appError = new AppError(ErrorType.UNKNOWN, error.message, 'UNKNOWN_ERROR', false, error);
+    reportErrorToSentry(appError, language);
+    return appError;
   }
 
-  return new AppError(ErrorType.UNKNOWN, 'An unknown error occurred', 'UNKNOWN_ERROR', false, error);
+  log.error('Converting unknown error to AppError');
+  const appError = new AppError(ErrorType.UNKNOWN, 'An unknown error occurred', 'UNKNOWN_ERROR', false, error);
+  reportErrorToSentry(appError, language);
+  return appError;
 };
 

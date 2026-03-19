@@ -14,6 +14,10 @@ export function useTheme() {
     return stored || "system";
   });
 
+  const [highContrastMode, setHighContrastModeState] = useState<boolean>(() => {
+    return StorageService.loadHighContrastMode();
+  });
+
   const applyTheme = useCallback((value: Theme) => {
     if (typeof document === "undefined") return;
     let actual: "light" | "dark" = "light";
@@ -51,10 +55,22 @@ export function useTheme() {
     applyTheme(theme);
   }, [theme, applyTheme]);
 
+  // Apply high contrast mode
+  useEffect(() => {
+    if (typeof document !== "undefined") {
+      document.documentElement.setAttribute("data-high-contrast", highContrastMode.toString());
+    }
+    StorageService.saveHighContrastMode(highContrastMode);
+  }, [highContrastMode]);
+
   const setTheme = useCallback((newTheme: Theme) => {
     setThemeState(newTheme);
   }, []);
 
-  return { theme, setTheme };
+  const setHighContrastMode = useCallback((value: boolean) => {
+    setHighContrastModeState(value);
+  }, []);
+
+  return { theme, setTheme, highContrastMode, setHighContrastMode };
 }
 

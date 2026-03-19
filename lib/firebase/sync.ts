@@ -16,7 +16,9 @@ import {
 } from "firebase/firestore";
 import { db } from "./config";
 import { Session, Message, validateSession } from "@/lib/sessions";
-import { saveToLocalStorage, loadFromLocalStorage } from "@/lib/storage";
+import { createLogger } from "@/lib/logger";
+
+const log = createLogger("FirestoreSync");
 
 // Convert Session to Firestore format
 const sessionToFirestore = (session: Session) => ({
@@ -100,7 +102,7 @@ export const syncSessionToFirestore = async (
 
     await batch.commit();
   } catch (error) {
-    console.error("Failed to sync session to Firestore:", error);
+    log.error("Failed to sync session to Firestore:", error);
     throw error;
   }
 };
@@ -142,7 +144,7 @@ export const loadSessionFromFirestore = async (
       messages,
     };
   } catch (error) {
-    console.error("Failed to load session from Firestore:", error);
+    log.error("Failed to load session from Firestore:", error);
     return null;
   }
 };
@@ -168,7 +170,7 @@ export const loadAllSessionsFromFirestore = async (
     
     return sessions;
   } catch (error) {
-    console.error("Failed to load sessions from Firestore:", error);
+    log.error("Failed to load sessions from Firestore:", error);
     return [];
   }
 };
@@ -190,7 +192,7 @@ export const deleteSessionFromFirestore = async (
     // Note: Firestore doesn't support cascading deletes in client SDK
     // Messages subcollection will remain but won't be loaded
   } catch (error) {
-    console.error("Failed to delete session from Firestore:", error);
+    log.error("Failed to delete session from Firestore:", error);
     throw error;
   }
 };
@@ -238,12 +240,12 @@ export const subscribeToSession = (
           messages,
         });
       } catch (error) {
-        console.error("Error in session snapshot:", error);
+        log.error("Error in session snapshot:", error);
         callback(null);
       }
     },
     (error) => {
-      console.error("Session sync error:", error);
+      log.error("Session sync error:", error);
       callback(null);
     }
   );
@@ -270,7 +272,7 @@ export const subscribeToAllSessions = (
           try {
             return firestoreToSession(doc.id, doc.data());
           } catch (error) {
-            console.error("Error parsing session:", error);
+            log.error("Error parsing session:", error);
             return null;
           }
         })
@@ -279,7 +281,7 @@ export const subscribeToAllSessions = (
       callback(sessions);
     },
     (error) => {
-      console.error("Sessions sync error:", error);
+      log.error("Sessions sync error:", error);
       callback([]);
     }
   );

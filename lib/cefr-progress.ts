@@ -1,24 +1,21 @@
-import { CEFR_LEVELS, CEFRLevel } from "./cefr";
+import { CEFRLevel } from "./cefr";
 
 export const CEFR_PROGRESS_RANGES: Record<
   CEFRLevel,
   { min: number; max: number }
 > = {
-  A1: { min: 0, max: 16.67 },
-  A2: { min: 16.67, max: 33.33 },
-  B1: { min: 33.33, max: 50 },
-  B2: { min: 50, max: 66.67 },
-  C1: { min: 66.67, max: 83.33 },
-  C2: { min: 83.33, max: 100 },
+  A1: { min: 0, max: 20 },
+  A2: { min: 20, max: 40 },
+  B1: { min: 40, max: 60 },
+  B2: { min: 60, max: 80 },
 };
 
 export const getCurrentCEFRLevel = (progress: number): CEFRLevel => {
-  if (progress < 16.67) return "A1";
-  if (progress < 33.33) return "A2";
-  if (progress < 50) return "B1";
-  if (progress < 66.67) return "B2";
-  if (progress < 83.33) return "C1";
-  return "C2";
+  if (progress < 20) return "A1";
+  if (progress < 40) return "A2";
+  if (progress < 60) return "B1";
+  if (progress < 80) return "B2";
+  return "B2";
 };
 
 export const calculateProgressDelta = (
@@ -30,8 +27,6 @@ export const calculateProgressDelta = (
     A2: 0.6,
     B1: 0.5,
     B2: 0.4,
-    C1: 0.3,
-    C2: 0.2,
   };
 
   const lossRates: Record<CEFRLevel, number> = {
@@ -39,8 +34,6 @@ export const calculateProgressDelta = (
     A2: 1.0,
     B1: 0.9,
     B2: 0.8,
-    C1: 0.7,
-    C2: 0.6,
   };
 
   return hasError ? -lossRates[currentLevel] : gainRates[currentLevel];

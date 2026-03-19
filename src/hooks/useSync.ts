@@ -27,20 +27,17 @@ export function useSync(
   const syncSession = useCallback(
     async (session: Session) => {
       if (!user) {
-        await SyncService.syncSession(user!, session, (status) => {
-          setSyncStatus((prev) => ({ ...prev, ...status }));
-        });
-      } else {
-        await SyncService.syncSession(user, session, (status) => {
-          setSyncStatus((prev) => ({ ...prev, ...status }));
-        });
+        return; // Don't sync if no user
       }
+      await SyncService.syncSession(user, session, (status) => {
+        setSyncStatus((prev) => ({ ...prev, ...status }));
+      });
     },
     [user]
   );
 
   // Process offline queue
-  useOfflineQueue(user, async (userId: string, session: Session) => {
+  useOfflineQueue(user, async (_userId: string, session: Session) => {
     await syncSession(session);
   });
 
@@ -65,7 +62,11 @@ export function useSync(
     );
 
     return () => {
-      // Cleanup handled by MultiTabSync
+      try {
+        unsubscribe();
+      } catch {
+        // ignore
+      }
     };
   }, [activeSessionId, sessions, onSessionUpdate]);
 

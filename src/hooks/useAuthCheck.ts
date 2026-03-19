@@ -53,3 +53,6 @@ export function useAuthCheck() {
   return { isAuthenticated, user, currentUserRef };
 }
 
+
+
+
