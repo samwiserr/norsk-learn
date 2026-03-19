@@ -20,7 +20,9 @@ export interface Session {
   completedTasks: number;
   progress: number;
   srsReviewList: string[];
-  userId?: string; // Optional: associated user ID after authentication
+  userId?: string;
+  exerciseMode?: string;
+  topicId?: string;
 }
 
 export const createSessionId = () =>
@@ -96,6 +98,7 @@ export const generateSessionTitleFromMessages = (
   
   // Use the most recent assistant message to generate title
   const latestAssistantMessage = assistantMessages[0];
+  if (!latestAssistantMessage) return "New Conversation";
   const content = latestAssistantMessage.content;
   
   // Clean up the content - remove common prefixes/patterns

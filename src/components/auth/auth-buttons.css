@@ -35,14 +35,14 @@
 }
 
 .signup-button {
-  background-color: #fff;
-  color: #1a1a1a;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  background-color: #fff; /* White background - matches login button */
+  color: #1a1a1a; /* Dark gray text - matches login button */
+  border: 1px solid rgba(0, 0, 0, 0.1); /* Matches login button */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .signup-button:hover {
-  background-color: #f8f8f8;
+  background-color: #f8f8f8; /* Matches login button hover */
   border-color: rgba(0, 0, 0, 0.15);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   transform: translateY(-1px);
@@ -95,14 +95,14 @@
 }
 
 [data-theme="dark"] .signup-button {
-  background-color: #1a1a1a;
-  color: #fff;
-  border-color: #333;
+  background-color: #fff; /* White background - matches login button */
+  color: #000; /* Dark text - matches login button */
+  border-color: rgba(0, 0, 0, 0.1);
 }
 
 [data-theme="dark"] .signup-button:hover {
-  background-color: #2a2a2a;
-  border-color: #444;
+  background-color: #e0e0e0; /* Matches login button hover */
+  border-color: rgba(0, 0, 0, 0.15);
 }
 
 [data-theme="dark"] .account-button:hover {

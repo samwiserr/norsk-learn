@@ -10,10 +10,8 @@ export const getTranslatedCEFRLevelInfo = (
     A2: { nameKey: "levelA2", descKey: "levelA2Desc" },
     B1: { nameKey: "levelB1", descKey: "levelB1Desc" },
     B2: { nameKey: "levelB2", descKey: "levelB2Desc" },
-    C1: { nameKey: "levelC1", descKey: "levelC1Desc" },
-    C2: { nameKey: "levelC2", descKey: "levelC2Desc" },
   };
-  
+
   const keys = translationKeyMap[level];
   return {
     name: getTranslation(language, keys.nameKey),

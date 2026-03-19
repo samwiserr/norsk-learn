@@ -1,7 +1,6 @@
 "use client";
 
-import { useContext } from "react";
-import { Context } from "@/src/context/Context";
+import { useSessionContext } from "@/src/context/SessionContext";
 import SessionItem from "./SessionItem";
 import "./SessionList.css";
 
@@ -10,7 +9,7 @@ interface SessionListProps {
 }
 
 const SessionList = ({ onItemClick }: SessionListProps) => {
-  const { sessions, activeSessionId } = useContext(Context);
+  const { sessions, activeSessionId } = useSessionContext();
 
   if (!sessions.length) {
     return <p className="session-empty">No conversations yet</p>;

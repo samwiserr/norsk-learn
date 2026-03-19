@@ -1,0 +1,538 @@
+.settings-page-container {
+  min-height: 100vh;
+  background: #FFFFFF; /* White container background - matches user requirement */
+  padding: 0;
+}
+
+.settings-page-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #FFFFFF; /* White background to prevent content showing through when scrolling */
+  backdrop-filter: blur(10px); /* Add blur effect for modern look */
+  border-bottom: 1px solid #E5E7EB; /* Subtle border for separation */
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 0; /* Remove margin since we're using padding-top on content */
+}
+
+.settings-back-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: transparent;
+  border: 1px solid #E5E7EB; /* Borders */
+  color: #1F2937; /* Primary text */
+  font-family: inherit;
+}
+
+.settings-back-button:hover {
+  background: #F8F9FA;
+  border-color: #1F2937; /* Dark slate */
+}
+
+.settings-page-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1F2937; /* Primary text */
+  margin: 0;
+}
+
+.settings-page-content {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px 24px 32px 24px; /* Add top padding to account for sticky header */
+  scroll-margin-top: 80px; /* Ensure sections scroll properly past sticky header */
+}
+
+.settings-section {
+  background: #F7F8FA; /* Light grey background - matches user requirement */
+  border: 1px solid #E5E7EB; /* Borders */
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.settings-section:last-child {
+  margin-bottom: 0;
+}
+
+.settings-section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1F2937; /* Primary text */
+  margin: 0 0 8px 0;
+}
+
+.settings-section-description {
+  font-size: 14px;
+  color: #6B7280; /* Secondary text */
+  margin: 0 0 20px 0;
+  line-height: 1.6;
+}
+
+.language-selector-list {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  min-height: 36px; /* Prevent layout shift */
+}
+
+.settings-section .language-selector-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  font-family: inherit;
+  font-size: 14px;
+  color: #1a1a1a;
+  white-space: nowrap;
+  min-width: fit-content;
+  box-sizing: border-box;
+}
+
+.settings-section .language-selector-item:hover {
+  border-color: rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.settings-section .language-selector-item.active {
+  background: rgba(37, 99, 235, 0.1);
+  border-color: #2563eb;
+  border-width: 2px;
+  font-weight: 600;
+}
+
+/* Mobile Language Selector - Same as Level Selection */
+.language-selector-mobile-trigger {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1a1a1a;
+  min-width: 120px;
+  min-height: 44px;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+.language-selector-mobile-trigger:hover {
+  border-color: rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.language-selector-mobile-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+
+.language-selector-mobile-content {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 400px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease;
+}
+
+.language-selector-mobile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.language-selector-mobile-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1F2937;
+  margin: 0;
+}
+
+.language-selector-mobile-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #6B7280;
+  transition: background-color 0.2s;
+}
+
+.language-selector-mobile-close:hover {
+  background: #F3F4F6;
+}
+
+.language-selector-mobile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.language-selector-mobile-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 15px;
+  transition: all 0.2s ease;
+  min-height: 48px;
+  box-sizing: border-box;
+}
+
+.language-selector-mobile-item:hover {
+  border-color: rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.language-selector-mobile-item.active {
+  background: rgba(37, 99, 235, 0.1);
+  border-color: #2563eb;
+  border-width: 2px;
+  font-weight: 600;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.language-flag {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.language-name {
+  flex: 1;
+  font-weight: 500;
+}
+
+.language-check {
+  color: #1F2937; /* Dark slate */
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.settings-toggle-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #E5E7EB; /* Borders - matches level cards */
+  border-radius: 8px;
+  background: #F7F8FA; /* Light grey background - matches user requirement */
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  font-family: inherit;
+  font-size: 14px;
+  color: #1F2937; /* Primary text - matches level cards */
+}
+
+.settings-toggle-item:hover {
+  border-color: #1F2937; /* Dark slate - matches level cards hover */
+  box-shadow: 0 2px 8px rgba(31, 41, 55, 0.1);
+}
+
+.settings-toggle-item.active {
+  background: #F7F8FA; /* Light grey background - matches user requirement */
+  border-color: #1F2937; /* Dark slate - matches selected level card */
+  border-width: 2px;
+  box-shadow: 0 2px 8px rgba(31, 41, 55, 0.15);
+}
+
+.toggle-check {
+  color: #1F2937; /* Dark slate */
+  font-weight: 600;
+  font-size: 16px;
+}
+
+/* FAQ Styles */
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.faq-item {
+  border: 1px solid #E5E7EB; /* Borders */
+  border-radius: 8px;
+  overflow: hidden;
+  background: #F7F8FA; /* Light grey background - matches user requirement */
+}
+
+.faq-question {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  text-align: left;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1F2937; /* Primary text */
+  transition: background 0.2s ease;
+}
+
+.faq-question:hover {
+  background: #FFFFFF; /* White hover background */
+}
+
+.faq-icon {
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+  color: #6B7280; /* Secondary text */
+}
+
+.faq-icon.expanded {
+  transform: rotate(180deg);
+}
+
+.faq-answer {
+  padding: 0 16px 16px 16px;
+  font-size: 14px;
+  color: #6B7280; /* Secondary text */
+  line-height: 1.6;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Dark mode compatibility */
+[data-theme="dark"] .settings-page-container {
+  background: #FFFFFF; /* White container background - opposite of dark blue */
+}
+
+[data-theme="dark"] .settings-page-header {
+  background: #FFFFFF; /* White background in dark mode too to prevent overlap */
+  border-color: #E5E7EB; /* Light border in dark mode */
+}
+
+[data-theme="dark"] .settings-back-button {
+  border-color: #E5E7EB; /* Light border - matches light mode */
+  color: #1F2937; /* Dark text - opposite of white text */
+}
+
+[data-theme="dark"] .settings-back-button:hover {
+  background: #F8F9FA; /* Light hover background */
+  border-color: #1F2937; /* Dark border on hover */
+}
+
+[data-theme="dark"] .settings-page-title {
+  color: #1F2937; /* Dark text - opposite of white text */
+}
+
+[data-theme="dark"] .settings-section {
+  background: #F7F8FA; /* Light grey background - matches level selector light mode */
+  border-color: #E5E7EB; /* Light border - matches level cards */
+}
+
+[data-theme="dark"] .settings-section-title {
+  color: #1F2937; /* Dark text - primary text color */
+}
+
+[data-theme="dark"] .settings-section-description {
+  color: #6B7280; /* Secondary text - grey */
+}
+
+[data-theme="dark"] .language-selector-item {
+  background: #F7F8FA; /* Light grey background - matches level selector */
+  border-color: #E5E7EB; /* Light border - matches level cards */
+  color: #1F2937; /* Dark text - primary text color */
+}
+
+[data-theme="dark"] .language-selector-item:hover {
+  border-color: #1F2937; /* Dark border on hover */
+  box-shadow: 0 2px 8px rgba(31, 41, 55, 0.1);
+}
+
+[data-theme="dark"] .language-selector-item.active {
+  background: #F7F8FA; /* Light grey background */
+  border-color: #1F2937; /* Dark border for active state */
+  border-width: 2px;
+  box-shadow: 0 2px 8px rgba(31, 41, 55, 0.15);
+}
+
+[data-theme="dark"] .settings-toggle-item {
+  background: #F7F8FA; /* Light grey background - matches level selector */
+  border-color: #E5E7EB; /* Light border - matches level cards */
+  color: #1F2937; /* Dark text - primary text color */
+}
+
+[data-theme="dark"] .settings-toggle-item:hover {
+  border-color: #1F2937; /* Dark border on hover */
+  box-shadow: 0 2px 8px rgba(31, 41, 55, 0.1);
+}
+
+[data-theme="dark"] .settings-toggle-item.active {
+  background: #F7F8FA; /* Light grey background */
+  border-color: #1F2937; /* Dark border for active state */
+  border-width: 2px;
+  box-shadow: 0 2px 8px rgba(31, 41, 55, 0.15);
+}
+
+[data-theme="dark"] .faq-item {
+  background: #F7F8FA; /* Light grey background - matches level selector */
+  border-color: #E5E7EB; /* Light border - matches level cards */
+}
+
+[data-theme="dark"] .faq-question {
+  color: #1F2937; /* Dark text - primary text color */
+}
+
+[data-theme="dark"] .faq-question:hover {
+  background: #FFFFFF; /* White hover background */
+}
+
+[data-theme="dark"] .faq-answer {
+  color: #6B7280; /* Secondary text - grey */
+}
+
+[data-theme="dark"] .language-check,
+[data-theme="dark"] .toggle-check {
+  color: #1F2937; /* Dark check mark - matches text color */
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .settings-page-content {
+    padding: 24px 16px;
+  }
+
+  .settings-section {
+    padding: 20px;
+  }
+
+  .settings-page-header {
+    padding: 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .settings-page-title {
+    font-size: 20px;
+  }
+  
+  /* Hide desktop language selector in settings section, show mobile trigger */
+  .settings-section .language-selector-list {
+    display: none !important;
+  }
+  
+  .settings-section .language-selector-mobile-trigger {
+    display: flex !important;
+    width: 100%;
+    margin-top: 8px;
+  }
+  
+  .settings-section .language-selector-item {
+    min-height: 44px;
+    padding: 12px 16px;
+    font-size: 15px;
+  }
+  
+  .settings-back-button {
+    min-height: 44px;
+    padding: 12px 20px;
+  }
+}
+
+@media (max-width: 320px) {
+  .settings-page-content {
+    padding: 20px 12px;
+  }
+  
+  .settings-section {
+    padding: 16px;
+  }
+  
+  .language-selector-mobile-content {
+    padding: 20px;
+  }
+  
+  .language-selector-mobile-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
+/* Desktop: Hide mobile trigger */
+@media (min-width: 769px) {
+  .language-selector-mobile-trigger {
+    display: none;
+  }
+}
+

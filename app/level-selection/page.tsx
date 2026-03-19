@@ -8,9 +8,7 @@ import {
   type CEFRLevel,
 } from "@/lib/cefr";
 import {
-  DEFAULT_LANGUAGE,
   getTranslation,
-  isValidLanguageCode,
   type LanguageCode,
 } from "@/lib/languages";
 import { getTranslatedCEFRLevelInfo } from "@/lib/cefr-translations";
@@ -21,14 +19,23 @@ import {
   saveToLocalStorage,
 } from "@/lib/storage";
 import { Session, validateSession } from "@/lib/sessions";
-import { Context } from "@/src/context/Context";
+import { useLanguageContext } from "@/src/context/LanguageContext";
+import { StorageService } from "@/src/services/storageService";
+import { wipeAllLearningDataWithSync } from "@/lib/data-wipe";
+import { AuthContext } from "@/src/context/AuthContext";
+import { SESSION_STORAGE_KEYS } from "@/lib/constants";
+import ConfirmDialog from "@/src/components/ConfirmDialog";
+import TestimonialsBar from "@/src/components/TestimonialsBar";
+import { GraduationCap, Bell, User } from "lucide-react";
 
 const LevelSelectionPage = () => {
   const router = useRouter();
-  const { language, setLanguage: setContextLanguage } = useContext(Context);
+  const { language, setLanguage: setContextLanguage } = useLanguageContext();
+  const { user } = useContext(AuthContext);
   const [selectedLevel, setSelectedLevel] = useState<CEFRLevel | null>(null);
-  const [hoveredLevel, setHoveredLevel] = useState<CEFRLevel | null>(null);
   const [hasActiveSessions, setHasActiveSessions] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [pendingLanguage, setPendingLanguage] = useState<LanguageCode | null>(null);
 
   useEffect(() => {
     const storedLevel = loadFromLocalStorage<string>("norsk_cefr_level");
@@ -44,19 +51,65 @@ const LevelSelectionPage = () => {
   const handleSelect = (level: CEFRLevel) => {
     setSelectedLevel(level);
     saveToLocalStorage("norsk_cefr_level", level);
-    // Mark that user is navigating from level selection page
-    // This helps Context detect when to create a new conversation after language/level selection
     if (typeof window !== "undefined") {
-      sessionStorage.setItem("norsk_from_level_selection", "true");
+      sessionStorage.setItem(SESSION_STORAGE_KEYS.FROM_LEVEL_SELECTION, "true");
+      const returnPath = sessionStorage.getItem(SESSION_STORAGE_KEYS.RETURN_PATH);
+      sessionStorage.removeItem(SESSION_STORAGE_KEYS.RETURN_PATH);
+      router.push(returnPath || "/");
     }
-    // Don't clear sessions - previous conversations should remain visible
-    router.push("/");
   };
 
   const handleBack = () => {
-    // Navigate back without setting the flag, so no new conversation is created
-    // This allows user to return to conversation if they clicked "Change level" by mistake
     router.push("/");
+  };
+
+  const handleLanguageChange = (newLanguage: LanguageCode) => {
+    if (newLanguage === language) {
+      return;
+    }
+    setPendingLanguage(newLanguage);
+    setShowConfirmDialog(true);
+  };
+
+  const performLanguageChange = async (newLanguage: LanguageCode) => {
+    const existingReturnPath = typeof window !== "undefined"
+      ? sessionStorage.getItem(SESSION_STORAGE_KEYS.RETURN_PATH)
+      : null;
+
+    await wipeAllLearningDataWithSync(user?.uid);
+
+    if (typeof window !== "undefined") {
+      StorageService.saveLanguage(newLanguage);
+      if (existingReturnPath) {
+        sessionStorage.setItem(SESSION_STORAGE_KEYS.RETURN_PATH, existingReturnPath);
+      }
+      setContextLanguage(newLanguage);
+      window.dispatchEvent(new StorageEvent("storage", {
+        key: "norsk_ui_language",
+        newValue: newLanguage,
+        oldValue: language,
+      }));
+    }
+
+    setShowConfirmDialog(false);
+    setPendingLanguage(null);
+
+    if (typeof window !== "undefined") {
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
+    }
+  };
+
+  const handleConfirmLanguageChange = () => {
+    if (pendingLanguage) {
+      performLanguageChange(pendingLanguage);
+    }
+  };
+
+  const handleCancelLanguageChange = () => {
+    setShowConfirmDialog(false);
+    setPendingLanguage(null);
   };
 
   const t = (key: any, params?: Record<string, string>) =>
@@ -64,80 +117,103 @@ const LevelSelectionPage = () => {
 
   return (
     <div className="level-selection-container">
-      <div className="background-animation">
-        <div className="gradient-orb orb-1"></div>
-        <div className="gradient-orb orb-2"></div>
-        <div className="gradient-orb orb-3"></div>
-      </div>
-      
-      <div className="level-selection-header">
-        {hasActiveSessions && (
-          <button
-            type="button"
-            className="back-button"
-            onClick={handleBack}
-            aria-label={t("back")}
-          >
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 4l-6 6 6 6"/>
-            </svg>
-            <span suppressHydrationWarning>{t("back")}</span>
-          </button>
-        )}
-        <div className="header-actions">
-          <LanguageSelectorLanding
-            selectedLanguage={language}
-            onLanguageChange={(code) => {
-              // Update both local storage and Context so AuthButtons updates immediately
-              saveToLocalStorage("norsk_ui_language", code);
-              setContextLanguage(code);
-              // Trigger language reload event for other components
-              if (typeof window !== "undefined") {
-                window.dispatchEvent(new Event("language-reload"));
-              }
-              // Language change alone should NOT trigger new conversation
-              // User must also select a level to create a new conversation
-            }}
-          />
-          <AuthButtons />
+      <header className="level-selection-header">
+        <div className="header-left">
+          <div className="logo-container">
+            <GraduationCap size={32} />
+            <span className="logo-title">Norsk Tutor</span>
+          </div>
         </div>
-      </div>
 
-      <div className="level-selection-content">
+        <div className="header-right">
+          <div className="header-actions-group">
+            <LanguageSelectorLanding
+              selectedLanguage={language}
+              onLanguageChange={handleLanguageChange}
+            />
+            <Bell size={20} className="nav-icon" />
+            <div className="user-avatar">
+              {user?.photoURL ? (
+                <img src={user.photoURL} alt={user.displayName || "User"} />
+              ) : (
+                <User size={20} color="#718096" />
+              )}
+            </div>
+            {/* Keeping AuthButtons for actual login/logout logic if needed, 
+                though mockup suggests a simple user icon */}
+            <AuthButtons />
+          </div>
+        </div>
+      </header>
+
+      <main className="level-selection-content">
         <div className="title-section">
-          <h1 className="level-selection-title" suppressHydrationWarning>{t("welcomeTitle")}</h1>
-          <div className="title-underline"></div>
+          {hasActiveSessions && (
+            <button
+              type="button"
+              className="back-button"
+              onClick={handleBack}
+              aria-label={t("back")}
+              style={{ marginBottom: '24px' }}
+            >
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 4l-6 6 6 6" />
+              </svg>
+              <span suppressHydrationWarning>{t("back")}</span>
+            </button>
+          )}
+          <h1 className="level-selection-title" suppressHydrationWarning>Select Your Norwegian Level</h1>
           <p className="level-selection-subtitle" suppressHydrationWarning>
-            {selectedLevel
-              ? t("currentLevelSubtitle", { level: selectedLevel })
-              : t("selectLevelSubtitle")}
+            {t("selectLevelSubtitle")}
           </p>
         </div>
 
         <div className="levels-grid">
-          {CEFR_LEVELS.map((level, index) => {
+          {CEFR_LEVELS.map((level) => {
             const levelInfo = getTranslatedCEFRLevelInfo(level, language);
+            const isSelected = selectedLevel === level;
             return (
               <div
                 key={`${level}-${language}`}
-                className={`level-card ${selectedLevel === level ? "selected" : ""} ${hoveredLevel === level ? "hovered" : ""}`}
+                className={`level-card ${isSelected ? "selected" : ""}`}
                 onClick={() => handleSelect(level)}
-                onMouseEnter={() => setHoveredLevel(level)}
-                onMouseLeave={() => setHoveredLevel(null)}
-                style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <div className="level-card-glow"></div>
-                <div className="level-badge">{level}</div>
-                <h3 className="level-name" suppressHydrationWarning>{levelInfo.name}</h3>
+                <div className="level-card-header">
+                  <div className="level-primary-info">
+                    <span className="level-id">{level}</span>
+                    <span className="level-name">{levelInfo.name}</span>
+                  </div>
+                  <div className="selection-indicator">
+                    {isSelected && (
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
+                  </div>
+                </div>
                 <p className="level-description" suppressHydrationWarning>
                   {levelInfo.description}
                 </p>
-                <div className="level-card-accent"></div>
               </div>
             );
           })}
         </div>
-      </div>
+      </main>
+
+      <ConfirmDialog
+        isOpen={showConfirmDialog}
+        title={t("changeLanguage") || "Change Language"}
+        message={
+          t("changeLanguageWarning") ||
+          "Changing the language will delete all your conversations and reset your progress. This action cannot be undone. Do you want to continue?"
+        }
+        confirmText={t("confirm") || "Continue"}
+        cancelText={t("cancel") || "Cancel"}
+        onConfirm={handleConfirmLanguageChange}
+        onCancel={handleCancelLanguageChange}
+      />
+
+      <TestimonialsBar />
     </div>
   );
 };

@@ -103,13 +103,12 @@ export const processOfflineQueue = async (
           processed.push(operation.id);
       }
     } catch (error) {
-      console.error(`Operation ${operation.id} failed:`, error);
+      // Operation failed, will be retried
       operation.retries++;
       if (operation.retries < MAX_RETRIES) {
         failed.push(operation);
       } else {
-        // Max retries exceeded - log for manual review
-        console.error("Operation failed after max retries:", operation);
+        // Max retries exceeded, removing from queue
         processed.push(operation.id); // Remove from queue
       }
     }
