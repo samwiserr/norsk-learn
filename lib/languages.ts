@@ -68,6 +68,10 @@ export interface Translations {
   pendingChanges: string;
   login: string;
   signupForFree: string;
+  authNudgeTitle: string;
+  authNudgeBody: string;
+  authNudgeSignIn: string;
+  authNudgeDismiss: string;
   account: string;
   changeLanguage: string;
   changeLanguageWarning: string;
@@ -95,6 +99,11 @@ export interface Translations {
   dashboard: string;
   welcomeBack: string;
   dashboardSubtitle: string;
+  progressionBannerLevelUp: string;
+  progressionBannerLevelDown: string;
+  progressionBannerExercise: string;
+  progressionReviewLevels: string;
+  progressionDismiss: string;
   speaking: string;
   speakingDesc: string;
   writing: string;
@@ -121,6 +130,16 @@ export interface Translations {
   message: string;
   viewAllTutors: string;
   findTutors: string;
+  tryAgain: string;
+  newExercise: string;
+  exerciseCorrectLabel: string;
+  selectExerciseToBegin: string;
+  exerciseHowPractice: string;
+  exerciseChooseModeSubtitle: string;
+  exerciseChooseTopic: string;
+  exerciseChooseGrammar: string;
+  /** Link when voice session fails — optional text practice */
+  speakingContinueInWriting: string;
 }
 
 const shared: Omit<
@@ -176,6 +195,11 @@ const shared: Omit<
   pendingChanges: "pending changes",
   login: "Log in",
   signupForFree: "Sign up for free",
+  authNudgeTitle: "Save your progress across devices",
+  authNudgeBody:
+    "Create a free account to sync your conversations. You can keep chatting without signing in.",
+  authNudgeSignIn: "Sign in",
+  authNudgeDismiss: "Not now",
   account: "Account",
   changeLanguage: "Change Language",
   changeLanguageWarning: "Changing the language will delete all your conversations and reset your progress. This action cannot be undone. Do you want to continue?",
@@ -203,6 +227,14 @@ const shared: Omit<
   dashboard: "Dashboard",
   welcomeBack: "Welcome back, {name}",
   dashboardSubtitle: "Welcome to NorskTutor language learning dashboard.",
+  progressionBannerLevelUp:
+    "You're progressing — ready to try {level}? You can change level anytime.",
+  progressionBannerLevelDown:
+    "This level looks challenging — try {level} for more support?",
+  progressionBannerExercise:
+    "Try a focused exercise from Writing to break through a plateau.",
+  progressionReviewLevels: "Review levels",
+  progressionDismiss: "Dismiss",
   speaking: "Speaking",
   speakingDesc: "Learn how to pronounce and speak with interactive learning.",
   writing: "Writing",
@@ -229,6 +261,15 @@ const shared: Omit<
   message: "Message",
   viewAllTutors: "View all 142 tutors",
   findTutors: "Find Tutors",
+  tryAgain: "Try again",
+  newExercise: "New Exercise",
+  exerciseCorrectLabel: "correct",
+  selectExerciseToBegin: "Select an exercise mode above to begin...",
+  exerciseHowPractice: "How would you like to practice?",
+  exerciseChooseModeSubtitle: "Choose an exercise mode to get started",
+  exerciseChooseTopic: "Choose a topic",
+  exerciseChooseGrammar: "Choose a grammar focus",
+  speakingContinueInWriting: "Continue in text mode",
 };
 
 const translations: Record<LanguageCode, Translations> = {
@@ -288,6 +329,11 @@ const translations: Record<LanguageCode, Translations> = {
     pendingChanges: "ventende endringer",
     login: "Logg inn",
     signupForFree: "Registrer deg gratis",
+    authNudgeTitle: "Lagre fremgangen på tvers av enheter",
+    authNudgeBody:
+      "Opprett en gratis konto for å synkronisere samtalene dine. Du kan fortsette å chatte uten å logge inn.",
+    authNudgeSignIn: "Logg inn",
+    authNudgeDismiss: "Ikke nå",
     account: "Konto",
     changeLanguage: "Endre språk",
     changeLanguageWarning: "Å endre språket vil slette alle samtaler og tilbakestille fremgangen din. Denne handlingen kan ikke angres. Vil du fortsette?",
@@ -321,6 +367,14 @@ const translations: Record<LanguageCode, Translations> = {
     dashboard: "Oversikt",
     welcomeBack: "Velkommen tilbake, {name}",
     dashboardSubtitle: "Velkommen til NorskTutor språklæringsoversikt.",
+    progressionBannerLevelUp:
+      "Du gjør fremgang — klar for {level}? Du kan endre nivå når som helst.",
+    progressionBannerLevelDown:
+      "Dette nivået ser utfordrende ut — prøv {level} for mer støtte?",
+    progressionBannerExercise:
+      "Prøv en målrettet øvelse under Skriving for å komme videre.",
+    progressionReviewLevels: "Se nivåer",
+    progressionDismiss: "Lukk",
     speaking: "Snakking",
     speakingDesc: "Lær hvordan du uttaler og snakker med interaktiv læring.",
     writing: "Skriving",
@@ -347,6 +401,15 @@ const translations: Record<LanguageCode, Translations> = {
     message: "Melding",
     viewAllTutors: "Se alle 142 veiledere",
     findTutors: "Finn veiledere",
+    tryAgain: "Prøv igjen",
+    newExercise: "Ny øvelse",
+    exerciseCorrectLabel: "riktig",
+    selectExerciseToBegin: "Velg en øvelsesmodus over for å begynne...",
+    exerciseHowPractice: "Hvordan vil du øve?",
+    exerciseChooseModeSubtitle: "Velg en øvelsesmodus for å komme i gang",
+    exerciseChooseTopic: "Velg et tema",
+    exerciseChooseGrammar: "Velg grammatikkfokus",
+    speakingContinueInWriting: "Fortsett i tekstmodus",
   },
   de: {
     welcomeTitle: "Willkommen beim Norwegischlernen!",
@@ -394,6 +457,11 @@ const translations: Record<LanguageCode, Translations> = {
     pendingChanges: "ausstehende Änderungen",
     login: "Anmelden",
     signupForFree: "Kostenlos registrieren",
+    authNudgeTitle: "Save your progress across devices",
+    authNudgeBody:
+      "Create a free account to sync your conversations. You can keep chatting without signing in.",
+    authNudgeSignIn: "Sign in",
+    authNudgeDismiss: "Not now",
     account: "Konto",
     changeLanguage: "Sprache ändern",
     changeLanguageWarning: "Das Ändern der Sprache löscht alle Ihre Unterhaltungen und setzt Ihren Fortschritt zurück. Diese Aktion kann nicht rückgängig gemacht werden. Möchten Sie fortfahren?",
@@ -427,6 +495,14 @@ const translations: Record<LanguageCode, Translations> = {
     dashboard: "Übersicht",
     welcomeBack: "Willkommen zurück, {name}",
     dashboardSubtitle: "Willkommen beim NorskTutor Sprachlern-Dashboard.",
+    progressionBannerLevelUp:
+      "You're progressing — ready to try {level}? You can change level anytime.",
+    progressionBannerLevelDown:
+      "This level looks challenging — try {level} for more support?",
+    progressionBannerExercise:
+      "Try a focused exercise from Writing to break through a plateau.",
+    progressionReviewLevels: "Review levels",
+    progressionDismiss: "Dismiss",
     speaking: "Sprechen",
     speakingDesc: "Lernen Sie die Aussprache und das Sprechen durch interaktives Lernen.",
     writing: "Schreiben",
@@ -453,6 +529,15 @@ const translations: Record<LanguageCode, Translations> = {
     message: "Nachricht",
     viewAllTutors: "Alle 142 Tutoren anzeigen",
     findTutors: "Tutoren finden",
+    tryAgain: "Erneut versuchen",
+    newExercise: "Neue Übung",
+    exerciseCorrectLabel: "richtig",
+    selectExerciseToBegin: "Wählen Sie oben einen Übungsmodus, um zu beginnen...",
+    exerciseHowPractice: "Wie möchten Sie üben?",
+    exerciseChooseModeSubtitle: "Wählen Sie einen Übungsmodus, um zu beginnen",
+    exerciseChooseTopic: "Wählen Sie ein Thema",
+    exerciseChooseGrammar: "Wählen Sie einen Grammatikschwerpunkt",
+    speakingContinueInWriting: "Im Textmodus fortfahren",
   },
   fr: {
     welcomeTitle: "Bienvenue à l'apprentissage du norvégien !",
@@ -501,6 +586,11 @@ const translations: Record<LanguageCode, Translations> = {
     pendingChanges: "modifications en attente",
     login: "Se connecter",
     signupForFree: "S'inscrire gratuitement",
+    authNudgeTitle: "Save your progress across devices",
+    authNudgeBody:
+      "Create a free account to sync your conversations. You can keep chatting without signing in.",
+    authNudgeSignIn: "Sign in",
+    authNudgeDismiss: "Not now",
     account: "Compte",
     changeLanguage: "Changer de langue",
     changeLanguageWarning: "Changer la langue supprimera toutes vos conversations et réinitialisera votre progression. Cette action ne peut pas être annulée. Voulez-vous continuer?",
@@ -534,6 +624,14 @@ const translations: Record<LanguageCode, Translations> = {
     dashboard: "Tableau de bord",
     welcomeBack: "Bon retour, {name}",
     dashboardSubtitle: "Bienvenue sur le tableau de bord d'apprentissage de NorskTutor.",
+    progressionBannerLevelUp:
+      "You're progressing — ready to try {level}? You can change level anytime.",
+    progressionBannerLevelDown:
+      "This level looks challenging — try {level} for more support?",
+    progressionBannerExercise:
+      "Try a focused exercise from Writing to break through a plateau.",
+    progressionReviewLevels: "Review levels",
+    progressionDismiss: "Dismiss",
     speaking: "Parler",
     speakingDesc: "Apprenez à prononcer et à parler avec l'apprentissage interactif.",
     writing: "Écrire",
@@ -560,6 +658,15 @@ const translations: Record<LanguageCode, Translations> = {
     message: "Message",
     viewAllTutors: "Voir les 142 tuteurs",
     findTutors: "Trouver des tuteurs",
+    tryAgain: "Réessayer",
+    newExercise: "Nouvel exercice",
+    exerciseCorrectLabel: "correct",
+    selectExerciseToBegin: "Sélectionnez un mode d'exercice ci-dessus pour commencer...",
+    exerciseHowPractice: "Comment souhaitez-vous pratiquer ?",
+    exerciseChooseModeSubtitle: "Choisissez un mode d'exercice pour commencer",
+    exerciseChooseTopic: "Choisissez un sujet",
+    exerciseChooseGrammar: "Choisissez un objectif grammatical",
+    speakingContinueInWriting: "Continuer en mode texte",
   },
   es: {
     welcomeTitle: "¡Bienvenido al aprendizaje de noruego!",
@@ -608,6 +715,11 @@ const translations: Record<LanguageCode, Translations> = {
     pendingChanges: "cambios pendientes",
     login: "Iniciar sesión",
     signupForFree: "Regístrate gratis",
+    authNudgeTitle: "Save your progress across devices",
+    authNudgeBody:
+      "Create a free account to sync your conversations. You can keep chatting without signing in.",
+    authNudgeSignIn: "Sign in",
+    authNudgeDismiss: "Not now",
     account: "Cuenta",
     changeLanguage: "Cambiar idioma",
     changeLanguageWarning: "Cambiar el idioma eliminará todas tus conversaciones y restablecerá tu progreso. Esta acción no se puede deshacer. ¿Deseas continuar?",
@@ -641,6 +753,14 @@ const translations: Record<LanguageCode, Translations> = {
     dashboard: "Panel",
     welcomeBack: "Bienvenido de nuevo, {name}",
     dashboardSubtitle: "Bienvenido al panel de aprendizaje de idiomas de NorskTutor.",
+    progressionBannerLevelUp:
+      "You're progressing — ready to try {level}? You can change level anytime.",
+    progressionBannerLevelDown:
+      "This level looks challenging — try {level} for more support?",
+    progressionBannerExercise:
+      "Try a focused exercise from Writing to break through a plateau.",
+    progressionReviewLevels: "Review levels",
+    progressionDismiss: "Dismiss",
     speaking: "Hablar",
     speakingDesc: "Aprende a pronunciar y hablar con el aprendizaje interactivo.",
     writing: "Escribir",
@@ -667,6 +787,15 @@ const translations: Record<LanguageCode, Translations> = {
     message: "Mensaje",
     viewAllTutors: "Ver los 142 tutores",
     findTutors: "Encontrar tutores",
+    tryAgain: "Intentar de nuevo",
+    newExercise: "Nuevo ejercicio",
+    exerciseCorrectLabel: "correcto",
+    selectExerciseToBegin: "Selecciona un modo de ejercicio arriba para empezar...",
+    exerciseHowPractice: "¿Cómo te gustaría practicar?",
+    exerciseChooseModeSubtitle: "Elige un modo de ejercicio para empezar",
+    exerciseChooseTopic: "Elige un tema",
+    exerciseChooseGrammar: "Elige un enfoque gramatical",
+    speakingContinueInWriting: "Continuar en modo texto",
   },
   it: {
     welcomeTitle: "Benvenuti all'apprendimento del norvegese!",
@@ -712,6 +841,11 @@ const translations: Record<LanguageCode, Translations> = {
     pendingChanges: "modifiche in sospeso",
     login: "Accedi",
     signupForFree: "Iscriviti gratuitamente",
+    authNudgeTitle: "Save your progress across devices",
+    authNudgeBody:
+      "Create a free account to sync your conversations. You can keep chatting without signing in.",
+    authNudgeSignIn: "Sign in",
+    authNudgeDismiss: "Not now",
     account: "Account",
     changeLanguage: "Cambia lingua",
     changeLanguageWarning: "Cambiare la lingua eliminerà tutte le tue conversazioni e ripristinerà i tuoi progressi. Questa azione non può essere annullata. Vuoi continuare?",
@@ -745,6 +879,14 @@ const translations: Record<LanguageCode, Translations> = {
     dashboard: "Dashboard",
     welcomeBack: "Bentornato, {name}",
     dashboardSubtitle: "Benvenuto nella dashboard di apprendimento delle lingue di NorskTutor.",
+    progressionBannerLevelUp:
+      "You're progressing — ready to try {level}? You can change level anytime.",
+    progressionBannerLevelDown:
+      "This level looks challenging — try {level} for more support?",
+    progressionBannerExercise:
+      "Try a focused exercise from Writing to break through a plateau.",
+    progressionReviewLevels: "Review levels",
+    progressionDismiss: "Dismiss",
     speaking: "Parlare",
     speakingDesc: "Impara a pronunciare e parlare con l'apprendimento interattivo.",
     writing: "Scrivere",
@@ -771,6 +913,15 @@ const translations: Record<LanguageCode, Translations> = {
     message: "Messaggio",
     viewAllTutors: "Visualizza tutti i 142 tutor",
     findTutors: "Trova tutor",
+    tryAgain: "Riprova",
+    newExercise: "Nuovo esercizio",
+    exerciseCorrectLabel: "corretti",
+    selectExerciseToBegin: "Seleziona una modalità di esercizio sopra per iniziare...",
+    exerciseHowPractice: "Come vuoi esercitarti?",
+    exerciseChooseModeSubtitle: "Scegli una modalità di esercizio per iniziare",
+    exerciseChooseTopic: "Scegli un argomento",
+    exerciseChooseGrammar: "Scegli un focus grammaticale",
+    speakingContinueInWriting: "Continua in modalità testo",
   },
   pt: {
     welcomeTitle: "Bem-vindo ao aprendizado de norueguês!",
@@ -817,6 +968,11 @@ const translations: Record<LanguageCode, Translations> = {
     pendingChanges: "alterações pendentes",
     login: "Entrar",
     signupForFree: "Cadastre-se gratuitamente",
+    authNudgeTitle: "Save your progress across devices",
+    authNudgeBody:
+      "Create a free account to sync your conversations. You can keep chatting without signing in.",
+    authNudgeSignIn: "Sign in",
+    authNudgeDismiss: "Not now",
     account: "Conta",
     changeLanguage: "Mudar idioma",
     changeLanguageWarning: "Mudar o idioma apagará todas as suas conversas e redefinirá seu progresso. Esta ação não pode ser desfeita. Deseja continuar?",
@@ -850,6 +1006,14 @@ const translations: Record<LanguageCode, Translations> = {
     dashboard: "Painel",
     welcomeBack: "Bem-vindo de volta, {name}",
     dashboardSubtitle: "Bem-vindo ao painel de aprendizado de idiomas NorskTutor.",
+    progressionBannerLevelUp:
+      "You're progressing — ready to try {level}? You can change level anytime.",
+    progressionBannerLevelDown:
+      "This level looks challenging — try {level} for more support?",
+    progressionBannerExercise:
+      "Try a focused exercise from Writing to break through a plateau.",
+    progressionReviewLevels: "Review levels",
+    progressionDismiss: "Dismiss",
     speaking: "Falar",
     speakingDesc: "Aprenda a pronunciar e falar com o aprendizado interativo.",
     writing: "Escrever",
@@ -876,6 +1040,15 @@ const translations: Record<LanguageCode, Translations> = {
     message: "Mensagem",
     viewAllTutors: "Ver todos os 142 tutores",
     findTutors: "Encontrar tutores",
+    tryAgain: "Tentar novamente",
+    newExercise: "Novo exercício",
+    exerciseCorrectLabel: "corretos",
+    selectExerciseToBegin: "Selecione um modo de exercício acima para começar...",
+    exerciseHowPractice: "Como você quer praticar?",
+    exerciseChooseModeSubtitle: "Escolha um modo de exercício para começar",
+    exerciseChooseTopic: "Escolha um tópico",
+    exerciseChooseGrammar: "Escolha um foco gramatical",
+    speakingContinueInWriting: "Continuar no modo texto",
   },
   nl: {
     welcomeTitle: "Welkom bij Noors leren!",
@@ -922,6 +1095,11 @@ const translations: Record<LanguageCode, Translations> = {
     pendingChanges: "wachtende wijzigingen",
     login: "Inloggen",
     signupForFree: "Gratis aanmelden",
+    authNudgeTitle: "Save your progress across devices",
+    authNudgeBody:
+      "Create a free account to sync your conversations. You can keep chatting without signing in.",
+    authNudgeSignIn: "Sign in",
+    authNudgeDismiss: "Not now",
     account: "Account",
     changeLanguage: "Taal wijzigen",
     changeLanguageWarning: "Het wijzigen van de taal verwijdert al uw gesprekken en reset uw voortgang. Deze actie kan niet ongedaan worden gemaakt. Wilt u doorgaan?",
@@ -955,6 +1133,14 @@ const translations: Record<LanguageCode, Translations> = {
     dashboard: "Dashboard",
     welcomeBack: "Welkom terug, {name}",
     dashboardSubtitle: "Welkom bij het NorskTutor taal leer-dashboard.",
+    progressionBannerLevelUp:
+      "You're progressing — ready to try {level}? You can change level anytime.",
+    progressionBannerLevelDown:
+      "This level looks challenging — try {level} for more support?",
+    progressionBannerExercise:
+      "Try a focused exercise from Writing to break through a plateau.",
+    progressionReviewLevels: "Review levels",
+    progressionDismiss: "Dismiss",
     speaking: "Spreken",
     speakingDesc: "Leer uitspraak en spreken door interactief leren.",
     writing: "Schrijven",
@@ -981,6 +1167,15 @@ const translations: Record<LanguageCode, Translations> = {
     message: "Bericht",
     viewAllTutors: "Bekijk alle 142 tutors",
     findTutors: "Tutors vinden",
+    tryAgain: "Opnieuw proberen",
+    newExercise: "Nieuwe oefening",
+    exerciseCorrectLabel: "goed",
+    selectExerciseToBegin: "Selecteer hierboven een oefenmodus om te beginnen...",
+    exerciseHowPractice: "Hoe wil je oefenen?",
+    exerciseChooseModeSubtitle: "Kies een oefenmodus om te beginnen",
+    exerciseChooseTopic: "Kies een onderwerp",
+    exerciseChooseGrammar: "Kies een grammaticale focus",
+    speakingContinueInWriting: "Ga verder in tekstmodus",
   },
   sv: {
     welcomeTitle: "Välkommen till norsk inlärning!",
@@ -1027,6 +1222,11 @@ const translations: Record<LanguageCode, Translations> = {
     pendingChanges: "väntande ändringar",
     login: "Logga in",
     signupForFree: "Registrera dig gratis",
+    authNudgeTitle: "Save your progress across devices",
+    authNudgeBody:
+      "Create a free account to sync your conversations. You can keep chatting without signing in.",
+    authNudgeSignIn: "Sign in",
+    authNudgeDismiss: "Not now",
     account: "Konto",
     changeLanguage: "Ändra språk",
     changeLanguageWarning: "Att ändra språk kommer att radera alla dina konversationer och återställa dina framsteg. Denna åtgärd kan inte ångras. Vill du fortsätta?",
@@ -1060,6 +1260,14 @@ const translations: Record<LanguageCode, Translations> = {
     dashboard: "Instrumentpanel",
     welcomeBack: "Välkommen tillbaka, {name}",
     dashboardSubtitle: "Välkommen till NorskTutors språkinlärningspanel.",
+    progressionBannerLevelUp:
+      "You're progressing — ready to try {level}? You can change level anytime.",
+    progressionBannerLevelDown:
+      "This level looks challenging — try {level} for more support?",
+    progressionBannerExercise:
+      "Try a focused exercise from Writing to break through a plateau.",
+    progressionReviewLevels: "Review levels",
+    progressionDismiss: "Dismiss",
     speaking: "Tala",
     speakingDesc: "Lär dig uttal och att tala genom interaktiv inlärning.",
     writing: "Skriva",
@@ -1086,6 +1294,15 @@ const translations: Record<LanguageCode, Translations> = {
     message: "Meddelande",
     viewAllTutors: "Visa alla 142 handledare",
     findTutors: "Hitta handledare",
+    tryAgain: "Försök igen",
+    newExercise: "Ny övning",
+    exerciseCorrectLabel: "rätt",
+    selectExerciseToBegin: "Välj ett övningsläge ovan för att börja...",
+    exerciseHowPractice: "Hur vill du öva?",
+    exerciseChooseModeSubtitle: "Välj ett övningsläge för att komma igång",
+    exerciseChooseTopic: "Välj ett ämne",
+    exerciseChooseGrammar: "Välj grammatikfokus",
+    speakingContinueInWriting: "Fortsätt i textläge",
   },
   da: {
     welcomeTitle: "Velkommen til norsk læring!",
@@ -1132,6 +1349,11 @@ const translations: Record<LanguageCode, Translations> = {
     pendingChanges: "afventende ændringer",
     login: "Log ind",
     signupForFree: "Tilmeld dig gratis",
+    authNudgeTitle: "Save your progress across devices",
+    authNudgeBody:
+      "Create a free account to sync your conversations. You can keep chatting without signing in.",
+    authNudgeSignIn: "Sign in",
+    authNudgeDismiss: "Not now",
     account: "Konto",
     changeLanguage: "Skift sprog",
     changeLanguageWarning: "At skifte sprog vil slette alle dine samtaler og nulstille din fremgang. Denne handling kan ikke fortrydes. Vil du fortsætte?",
@@ -1165,6 +1387,14 @@ const translations: Record<LanguageCode, Translations> = {
     dashboard: "Dashboard",
     welcomeBack: "Velkommen tilbage, {name}",
     dashboardSubtitle: "Velkommen til NorskTutor sprogindlærings-dashboard.",
+    progressionBannerLevelUp:
+      "You're progressing — ready to try {level}? You can change level anytime.",
+    progressionBannerLevelDown:
+      "This level looks challenging — try {level} for more support?",
+    progressionBannerExercise:
+      "Try a focused exercise from Writing to break through a plateau.",
+    progressionReviewLevels: "Review levels",
+    progressionDismiss: "Dismiss",
     speaking: "Tale",
     speakingDesc: "Lær udtale og tale gennem interaktiv læring.",
     writing: "Skrivning",
@@ -1191,6 +1421,15 @@ const translations: Record<LanguageCode, Translations> = {
     message: "Besked",
     viewAllTutors: "Se alle 142 tutorer",
     findTutors: "Find tutorer",
+    tryAgain: "Prøv igen",
+    newExercise: "Ny øvelse",
+    exerciseCorrectLabel: "korrekt",
+    selectExerciseToBegin: "Vælg en øvelsestilstand ovenfor for at begynde...",
+    exerciseHowPractice: "Hvordan vil du øve?",
+    exerciseChooseModeSubtitle: "Vælg en øvelsestilstand for at komme i gang",
+    exerciseChooseTopic: "Vælg et emne",
+    exerciseChooseGrammar: "Vælg grammatikfokus",
+    speakingContinueInWriting: "Fortsæt i teksttilstand",
   },
   fi: {
     welcomeTitle: "Tervetuloa norjan oppimiseen!",
@@ -1237,6 +1476,11 @@ const translations: Record<LanguageCode, Translations> = {
     pendingChanges: "odottavat muutokset",
     login: "Kirjaudu sisään",
     signupForFree: "Rekisteröidy ilmaiseksi",
+    authNudgeTitle: "Save your progress across devices",
+    authNudgeBody:
+      "Create a free account to sync your conversations. You can keep chatting without signing in.",
+    authNudgeSignIn: "Sign in",
+    authNudgeDismiss: "Not now",
     account: "Tili",
     changeLanguage: "Vaihda kieltä",
     changeLanguageWarning: "Kielen vaihtaminen poistaa kaikki keskustelusi ja nollaa edistymisesi. Tätä toimintoa ei voi kumota. Haluatko jatkaa?",
@@ -1270,6 +1514,14 @@ const translations: Record<LanguageCode, Translations> = {
     dashboard: "Hallintapaneeli",
     welcomeBack: "Tervetuloa takaisin, {name}",
     dashboardSubtitle: "Tervetuloa NorskTutorin kieltenoppimisen hallintapaneeliin.",
+    progressionBannerLevelUp:
+      "You're progressing — ready to try {level}? You can change level anytime.",
+    progressionBannerLevelDown:
+      "This level looks challenging — try {level} for more support?",
+    progressionBannerExercise:
+      "Try a focused exercise from Writing to break through a plateau.",
+    progressionReviewLevels: "Review levels",
+    progressionDismiss: "Dismiss",
     speaking: "Puhuminen",
     speakingDesc: "Opi ääntämistä ja puhumista interaktiivisen oppimisen avulla.",
     writing: "Kirjoittaminen",
@@ -1296,6 +1548,15 @@ const translations: Record<LanguageCode, Translations> = {
     message: "Viesti",
     viewAllTutors: "Näytä kaikki 142 ohjaajaa",
     findTutors: "Etsi ohjaajia",
+    tryAgain: "Yritä uudelleen",
+    newExercise: "Uusi harjoitus",
+    exerciseCorrectLabel: "oikein",
+    selectExerciseToBegin: "Valitse harjoitustila yltä aloittaaksesi...",
+    exerciseHowPractice: "Miten haluat harjoitella?",
+    exerciseChooseModeSubtitle: "Valitse harjoitustila aloittaaksesi",
+    exerciseChooseTopic: "Valitse aihe",
+    exerciseChooseGrammar: "Valitse kielioppifokus",
+    speakingContinueInWriting: "Jatka tekstitilassa",
   },
   pl: {
     welcomeTitle: "Witamy w nauce norweskiego!",
@@ -1342,6 +1603,11 @@ const translations: Record<LanguageCode, Translations> = {
     pendingChanges: "oczekujące zmiany",
     login: "Zaloguj się",
     signupForFree: "Zarejestruj się za darmo",
+    authNudgeTitle: "Save your progress across devices",
+    authNudgeBody:
+      "Create a free account to sync your conversations. You can keep chatting without signing in.",
+    authNudgeSignIn: "Sign in",
+    authNudgeDismiss: "Not now",
     account: "Konto",
     changeLanguage: "Zmień język",
     changeLanguageWarning: "Zmiana języka usunie wszystkie Twoje rozmowy i zresetuje Twój postęp. Tej akcji nie można cofnąć. Czy chcesz kontynuować?",
@@ -1375,6 +1641,14 @@ const translations: Record<LanguageCode, Translations> = {
     dashboard: "Panel",
     welcomeBack: "Witaj ponownie, {name}",
     dashboardSubtitle: "Witaj w panelu nauki języków NorskTutor.",
+    progressionBannerLevelUp:
+      "You're progressing — ready to try {level}? You can change level anytime.",
+    progressionBannerLevelDown:
+      "This level looks challenging — try {level} for more support?",
+    progressionBannerExercise:
+      "Try a focused exercise from Writing to break through a plateau.",
+    progressionReviewLevels: "Review levels",
+    progressionDismiss: "Dismiss",
     speaking: "Mówienie",
     speakingDesc: "Naucz się wymowy i mówienia poprzez interaktywną naukę.",
     writing: "Pisanie",
@@ -1401,6 +1675,15 @@ const translations: Record<LanguageCode, Translations> = {
     message: "Wiadomość",
     viewAllTutors: "Zobacz wszystkich 142 korepetytorów",
     findTutors: "Znajdź korepetytorów",
+    tryAgain: "Spróbuj ponownie",
+    newExercise: "Nowe ćwiczenie",
+    exerciseCorrectLabel: "poprawnie",
+    selectExerciseToBegin: "Wybierz tryb ćwiczenia powyżej, aby rozpocząć...",
+    exerciseHowPractice: "Jak chcesz ćwiczyć?",
+    exerciseChooseModeSubtitle: "Wybierz tryb ćwiczenia, aby rozpocząć",
+    exerciseChooseTopic: "Wybierz temat",
+    exerciseChooseGrammar: "Wybierz fokus gramatyczny",
+    speakingContinueInWriting: "Kontynuuj w trybie tekstowym",
   },
   uk: {
     welcomeTitle: "Ласкаво просимо до вивчення норвезької!",
@@ -1447,6 +1730,11 @@ const translations: Record<LanguageCode, Translations> = {
     pendingChanges: "незавершені зміни",
     login: "Увійти",
     signupForFree: "Зареєструватися безкоштовно",
+    authNudgeTitle: "Save your progress across devices",
+    authNudgeBody:
+      "Create a free account to sync your conversations. You can keep chatting without signing in.",
+    authNudgeSignIn: "Sign in",
+    authNudgeDismiss: "Not now",
     account: "Обліковий запис",
     changeLanguage: "Змінити мову",
     changeLanguageWarning: "Зміна мови видалить усі ваші розмови та скине ваш прогрес. Цю дію не можна скасувати. Бажаєте продовжити?",
@@ -1480,6 +1768,14 @@ const translations: Record<LanguageCode, Translations> = {
     dashboard: "Панель",
     welcomeBack: "Ласкаво просимо, {name}",
     dashboardSubtitle: "Ласкаво просимо до панелі вивчення мов NorskTutor.",
+    progressionBannerLevelUp:
+      "You're progressing — ready to try {level}? You can change level anytime.",
+    progressionBannerLevelDown:
+      "This level looks challenging — try {level} for more support?",
+    progressionBannerExercise:
+      "Try a focused exercise from Writing to break through a plateau.",
+    progressionReviewLevels: "Review levels",
+    progressionDismiss: "Dismiss",
     speaking: "Розмовна мова",
     speakingDesc: "Вивчайте вимову та розмовну мову за допомогою інтерактивного навчання.",
     writing: "Письмо",
@@ -1506,6 +1802,15 @@ const translations: Record<LanguageCode, Translations> = {
     message: "Повідомлення",
     viewAllTutors: "Переглянути всіх 142 репетиторів",
     findTutors: "Знайти репетиторів",
+    tryAgain: "Спробувати ще раз",
+    newExercise: "Нова вправа",
+    exerciseCorrectLabel: "правильно",
+    selectExerciseToBegin: "Оберіть режим вправи вище, щоб почати...",
+    exerciseHowPractice: "Як ви хочете практикуватися?",
+    exerciseChooseModeSubtitle: "Оберіть режим вправи, щоб почати",
+    exerciseChooseTopic: "Оберіть тему",
+    exerciseChooseGrammar: "Оберіть граматичний фокус",
+    speakingContinueInWriting: "Продовжити текстовим режимом",
   },
 };
 

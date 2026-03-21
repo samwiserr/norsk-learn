@@ -196,13 +196,6 @@ export function useSessionManagement() {
     setActiveSessionId(id);
   }, []);
 
-  const renameSession = useCallback(
-    (id: string, title: string) => {
-      updateSession(id, { title });
-    },
-    []
-  );
-
   const updateSession = useCallback((id: string, data: Partial<Session>) => {
     setSessions((prev) => {
       const existing = prev.find((s) => s.id === id);
@@ -229,6 +222,13 @@ export function useSessionManagement() {
       return updated;
     });
   }, [activeSessionId, setActiveSession]);
+
+  const renameSession = useCallback(
+    (id: string, title: string) => {
+      updateSession(id, { title });
+    },
+    [updateSession]
+  );
 
   const replaceAllSessions = useCallback((newSessions: Session[]) => {
     log.info("Replacing all sessions", {

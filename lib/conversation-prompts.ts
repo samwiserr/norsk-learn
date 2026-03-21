@@ -80,6 +80,7 @@ export const buildConversationPrompt = ({
   mode = "writing",
   exerciseMode,
   topicId,
+  turnType = "conversation",
 }: {
   userInput: string;
   cefrLevel: string;
@@ -89,6 +90,7 @@ export const buildConversationPrompt = ({
   mode?: "writing" | "speaking" | "tutor_booking";
   exerciseMode?: string;
   topicId?: string;
+  turnType?: "conversation" | "exercise_start";
 }) => {
   const currentLevel = getCurrentCEFRLevel(currentProgress);
   const formattedHistory = conversationHistory
@@ -124,7 +126,7 @@ export const buildConversationPrompt = ({
        - Enforce STRICT grammar, punctuation, and capitalization rules.
        - Every minor error (commas, gender, etc.) should be noted.`;
 
-  const isExerciseStart = userInput === "[EXERCISE_START]";
+  const isExerciseStart = turnType === "exercise_start";
 
   const exerciseInstructions = (() => {
     if (!exerciseMode || exerciseMode === "free_conversation") {

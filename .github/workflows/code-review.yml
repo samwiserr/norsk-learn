@@ -1,0 +1,47 @@
+name: Code Review Automation
+
+on:
+  pull_request:
+    branches: [main, master]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  automated-review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Analyze PR diff
+        run: node scripts/code-review/analyze-pr.mjs --base "${{ github.base_ref }}" --head "${{ github.sha }}" --output review-report.json
+
+      - name: Render markdown report
+        run: node scripts/code-review/render-report.mjs --input review-report.json --output review-report.md
+
+      - name: Upload review artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-review-report
+          path: |
+            review-report.json
+            review-report.md
+
+      - name: Comment report on PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: code-review-automation
+          path: review-report.md
+

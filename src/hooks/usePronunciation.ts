@@ -1,6 +1,7 @@
 import { useCallback, useRef } from "react";
 import { addBreadcrumb, captureException } from "@sentry/nextjs";
 import * as SpeechSDK from "microsoft-cognitiveservices-speech-sdk";
+import { ApiService } from "@/src/services/apiService";
 
 export interface WordPhonemeResult {
     word: string;
@@ -51,14 +52,8 @@ export function usePronunciation(config: PronunciationConfig) {
                 data: { mode, language, hasReference: Boolean(referenceText) },
             });
 
-            const tokenRes = await fetch("/api/azure-speech-token");
-            if (!tokenRes.ok) {
-                const detail = await tokenRes.json().catch(() => ({}));
-                throw new Error(detail.error || "Failed to fetch Azure Speech token");
-            }
-            const token = await tokenRes.json() as { token: string; region: string };
-
-            const speechConfig = SpeechSDK.SpeechConfig.fromAuthorizationToken(token.token, token.region);
+            const tokenData = await ApiService.getAzureSpeechToken();
+            const speechConfig = SpeechSDK.SpeechConfig.fromAuthorizationToken(tokenData.token, tokenData.region);
             speechConfig.speechRecognitionLanguage = language;
 
             const audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();

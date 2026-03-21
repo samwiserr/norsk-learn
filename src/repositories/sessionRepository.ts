@@ -32,6 +32,8 @@ export class SessionRepository {
   static saveAll(sessions: Session[]): void {
     const validSessions = sessions.filter(validateSession);
     StorageService.saveSessions(validSessions);
+    const maxU = validSessions.reduce((m, s) => Math.max(m, s.updatedAt), 0);
+    StorageService.saveSessionBundleUpdatedAt(Math.max(maxU, Date.now()));
   }
 
   /**

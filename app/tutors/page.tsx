@@ -66,23 +66,23 @@ export default function TutorsPage() {
     const t = (key: any, params?: any) => getTranslation(language, key, params);
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-zinc-950">
+        <div className="min-h-screen bg-background text-foreground">
             {/* Navigation Header */}
-            <header className="w-full bg-white dark:bg-black border-b border-slate-200 dark:border-zinc-800 py-4 px-6">
+            <header className="w-full border-b border-border/80 bg-card/80 px-6 py-4 backdrop-blur">
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
                     {/* Logo */}
                     <div className="flex items-center gap-2">
-                        <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                            <Languages className="w-6 h-6 text-white" />
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
+                            <Languages className="h-6 w-6 text-primary-foreground" />
                         </div>
-                        <span className="text-xl font-bold text-slate-900 dark:text-white">Norsk Tutor</span>
+                        <span className="text-xl font-bold text-foreground">Norsk Tutor</span>
                     </div>
 
                     {/* Navigation Links */}
                     <nav className="flex items-center gap-6">
                         <Link
                             href="/"
-                            className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-medium transition-colors"
+                            className="font-medium text-muted-foreground transition-colors hover:text-foreground"
                         >
                             {t("dashboard")}
                         </Link>
@@ -93,7 +93,7 @@ export default function TutorsPage() {
                     <div className="relative">
                         <button
                             onClick={() => setShowDropdown(!showDropdown)}
-                            className="flex items-center gap-2 p-1 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+                            className="flex items-center gap-2 rounded-full p-1 transition-colors hover:bg-secondary"
                         >
                             <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-sm ring-2 ring-slate-200 dark:ring-zinc-800">
                                 S
@@ -102,10 +102,10 @@ export default function TutorsPage() {
                         </button>
 
                         {showDropdown && (
-                            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-zinc-900 rounded-lg shadow-lg border border-slate-200 dark:border-zinc-700 py-2 z-50">
+                            <div className="soft-panel absolute right-0 z-50 mt-2 w-48 py-2">
                                 <Link
                                     href="/settings"
-                                    className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-zinc-800"
+                                    className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-secondary/70"
                                     onClick={() => setShowDropdown(false)}
                                 >
                                     <Settings className="w-4 h-4" />
@@ -113,7 +113,7 @@ export default function TutorsPage() {
                                 </Link>
                                 <Link
                                     href="/level-selection"
-                                    className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-zinc-800"
+                                    className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-secondary/70"
                                     onClick={() => setShowDropdown(false)}
                                 >
                                     <GraduationCap className="w-4 h-4" />
@@ -144,18 +144,18 @@ export default function TutorsPage() {
                         <input
                             type="text"
                             placeholder={t("searchPlaceholder")}
-                            className="w-full pl-12 pr-4 py-3 border border-slate-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full rounded-xl border border-border bg-card/95 py-3 pl-12 pr-4 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                         />
                     </div>
                     <div className="flex items-center gap-3 w-full md:w-auto">
-                        <button className="flex-1 md:flex-none px-6 py-3 border border-slate-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors">
+                        <button className="flex-1 rounded-xl border border-border bg-card/95 px-6 py-3 font-medium text-foreground transition-colors hover:bg-secondary md:flex-none">
                             {t("availability")}
                         </button>
-                        <button className="flex-1 md:flex-none px-6 py-3 border border-slate-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors flex items-center justify-center gap-2">
+                        <button className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-card/95 px-6 py-3 font-medium text-foreground transition-colors hover:bg-secondary md:flex-none">
                             <span className="text-lg">≡</span>
                             {t("price")}
                         </button>
-                        <button className="flex-1 md:flex-none px-6 py-3 border border-slate-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors">
+                        <button className="flex-1 rounded-xl border border-border bg-card/95 px-6 py-3 font-medium text-foreground transition-colors hover:bg-secondary md:flex-none">
                             {t("moreFilters")}
                         </button>
                     </div>
@@ -166,11 +166,11 @@ export default function TutorsPage() {
                     {TUTORS.map((tutor) => (
                         <div
                             key={tutor.id}
-                            className="bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-slate-200 dark:border-zinc-800 hover:shadow-lg transition-shadow flex flex-col min-h-[340px]"
+                            className="flex min-h-[340px] flex-col rounded-3xl border border-border/80 bg-card/95 p-6 shadow-[0_12px_26px_hsl(224_30%_30%_/_0.08)] transition-all hover:-translate-y-1 hover:shadow-[0_16px_32px_hsl(224_30%_30%_/_0.12)]"
                         >
                             {/* Profile Image with Badge */}
                             <div className="relative mb-4 inline-block">
-                                <div className={cn("w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold text-slate-700", tutor.avatar)}>
+                                <div className={cn("flex h-20 w-20 items-center justify-center rounded-full text-2xl font-bold text-foreground", tutor.avatar)}>
                                     {(tutor.name.split(' ')[0] || "").charAt(0)}{(tutor.name.split(' ')[1] || "").charAt(0)}
                                 </div>
                                 {tutor.certified && (
@@ -231,11 +231,11 @@ export default function TutorsPage() {
 
                             {/* Action Buttons */}
                             <div className="space-y-2">
-                                <button className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors">
+                                <button className="w-full rounded-xl bg-primary py-3 font-semibold text-primary-foreground transition-all hover:-translate-y-0.5 hover:opacity-95">
                                     {t("bookTrial")}
                                 </button>
                                 {tutor.id === 2 && (
-                                    <button className="w-full py-3 border border-slate-300 dark:border-zinc-700 hover:bg-slate-50 dark:hover:bg-zinc-800 text-slate-700 dark:text-slate-300 font-semibold rounded-lg transition-colors">
+                                    <button className="w-full rounded-xl border border-border py-3 font-semibold text-foreground transition-colors hover:bg-secondary">
                                         {t("message")}
                                     </button>
                                 )}

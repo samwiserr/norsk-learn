@@ -1,0 +1,14 @@
+---
+description: Route work through the right engineering lens for the norsk-tutor app
+alwaysApply: true
+---
+
+# Engineering Routing
+
+- Start with `Senior Architect` for major feature work, data-flow changes, or anything that changes boundaries across `app/`, `src/context/`, `src/services/`, or `app/api/`.
+- Use `Senior Frontend` for UI-first changes in `app/**/*.tsx`, `src/components/**/*`, `src/context/**/*`, and UX work around loading, accessibility, navigation, or rendering.
+- Use `Senior Backend` for API and integration work in `app/api/**/*`, `lib/**/*`, `src/services/**/*`, and `src/repositories/**/*`.
+- Use `Senior Fullstack` when a feature crosses UI, session state, and API boundaries in one slice.
+- Keep one primary lens per thread. If a change is deep on both UI and API, split it into separate frontend and backend passes after the architecture pass.
+- Before merge, run the supporting lenses that fit the change: `Senior Security`, `Senior SecOps`, `Senior QA`, `Code Reviewer`, and `Senior DevOps`.
+- Name the lens in the first line of the prompt so the intended rule is explicit.

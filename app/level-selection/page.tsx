@@ -134,7 +134,19 @@ const LevelSelectionPage = () => {
             <Bell size={20} className="nav-icon" />
             <div className="user-avatar">
               {user?.photoURL ? (
-                <img src={user.photoURL} alt={user.displayName || "User"} />
+                <span
+                  role="img"
+                  aria-label={user.displayName || "User"}
+                  style={{
+                    display: "block",
+                    width: "100%",
+                    height: "100%",
+                    borderRadius: "50%",
+                    backgroundImage: `url(${user.photoURL})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                  }}
+                />
               ) : (
                 <User size={20} color="#718096" />
               )}
@@ -154,7 +166,6 @@ const LevelSelectionPage = () => {
               className="back-button"
               onClick={handleBack}
               aria-label={t("back")}
-              style={{ marginBottom: '24px' }}
             >
               <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 4l-6 6 6 6" />
@@ -162,7 +173,9 @@ const LevelSelectionPage = () => {
               <span suppressHydrationWarning>{t("back")}</span>
             </button>
           )}
-          <h1 className="level-selection-title" suppressHydrationWarning>Select Your Norwegian Level</h1>
+          <h1 className="level-selection-title" suppressHydrationWarning>
+            {selectedLevel ? t("selectNewLevel") : t("selectLevelSubtitle")}
+          </h1>
           <p className="level-selection-subtitle" suppressHydrationWarning>
             {t("selectLevelSubtitle")}
           </p>

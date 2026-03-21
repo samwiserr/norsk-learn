@@ -5,10 +5,13 @@
 
 /**
  * Authentication constants
- * Set to a very high number to effectively suspend the limit
+ * Soft nudge at NUDGE; hard block for anonymous users at HARD_GATE
  */
-export const AUTH_REQUIRED_MESSAGE_COUNT = 999999;
-export const AUTH_WARNING_MESSAGE_COUNT = 3;
+export const AUTH_NUDGE_MESSAGE_COUNT = 3;
+export const AUTH_HARD_GATE_MESSAGE_COUNT = 50;
+/** @deprecated Use AUTH_HARD_GATE_MESSAGE_COUNT — kept for any legacy imports */
+export const AUTH_REQUIRED_MESSAGE_COUNT = AUTH_HARD_GATE_MESSAGE_COUNT;
+export const AUTH_WARNING_MESSAGE_COUNT = AUTH_NUDGE_MESSAGE_COUNT;
 
 /**
  * UI/UX constants
@@ -35,6 +38,8 @@ export const STORAGE_KEYS = {
   UI_LANGUAGE: "norsk_ui_language",
   THEME: "norsk_theme",
   SESSIONS: "norsk_sessions",
+  /** Last-write-wins clock for session bundle (local vs server restore). */
+  SESSION_BUNDLE_UPDATED_AT: "norsk_session_bundle_updated_at",
   USER: "norsk_user",
   USER_MESSAGE_COUNT: "norsk_user_message_count",
   HIGH_CONTRAST: "norsk_high_contrast",
@@ -46,6 +51,10 @@ export const STORAGE_KEYS = {
 export const SESSION_STORAGE_KEYS = {
   FROM_LEVEL_SELECTION: "norsk_from_level_selection",
   RETURN_PATH: "norsk_return_path",
+  /** Once per browser tab/session — avoid repeat AUTH_NUDGE events */
+  AUTH_NUDGE_SHOWN: "norsk_auth_nudge_shown",
+  /** One-shot notice after redirect from failed voice session */
+  SPEAKING_FALLBACK_NOTICE: "norsk_speaking_fallback_notice",
 } as const;
 
 /**
@@ -55,7 +64,29 @@ export const CUSTOM_EVENTS = {
   LANGUAGE_RELOAD: "language-reload",
   LEVEL_RELOAD: "level-reload",
   CHECK_LEVEL_SELECTION_FLAG: "check-level-selection-flag",
+  /** Non-blocking: show dismissible sign-in banner; conversation continues */
+  AUTH_NUDGE: "auth-nudge",
   AUTH_REQUIRED: "auth-required",
+} as const;
+
+/**
+ * CEFR progression engine (client-side heuristics; configurable)
+ */
+export const CEFR_PROGRESSION = {
+  MASTERY_WINDOW: 20,
+  /** Suggest level up when must-fix rate in window is at or below this */
+  MASTERY_MAX_MUST_FIX_RATE: 0.05,
+  STRUGGLE_WINDOW: 10,
+  STRUGGLE_MIN_MUST_FIX_RATE: 0.4,
+  PLATEAU_WINDOW: 30,
+  /** Minimum samples before suggesting level change */
+  MIN_SAMPLES_LEVEL_CHANGE: 12,
+  /** For plateau: min fraction of graded exercise turns with no improvement signal */
+  PLATEAU_EXERCISE_MIN_RATE: 0.5,
+} as const;
+
+export const SESSION_STORAGE_KEYS_PROGRESS = {
+  DISMISS_LEVEL_SUGGESTION: "norsk_dismiss_progress_suggestion",
 } as const;
 
 /**

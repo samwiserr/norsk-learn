@@ -115,6 +115,24 @@ export class StorageService {
     }
   }
 
+  /** Monotonic-ish bundle clock for merge with server snapshot */
+  static loadSessionBundleUpdatedAt(): number {
+    try {
+      const n = loadFromLocalStorage<number>(STORAGE_KEYS.SESSION_BUNDLE_UPDATED_AT);
+      return typeof n === "number" && !Number.isNaN(n) ? n : 0;
+    } catch {
+      return 0;
+    }
+  }
+
+  static saveSessionBundleUpdatedAt(ts: number): void {
+    try {
+      saveToLocalStorage(STORAGE_KEYS.SESSION_BUNDLE_UPDATED_AT, ts);
+    } catch (e) {
+      log.warn("Could not save session bundle timestamp", e);
+    }
+  }
+
   /**
    * Load user from storage
    */

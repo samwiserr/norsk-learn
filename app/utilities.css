@@ -1,39 +1,39 @@
 /* Success states */
 .success-text {
-  color: #16A34A; /* Success green */
+  color: hsl(146 58% 40%);
 }
 
 .success-bg {
-  background-color: rgba(22, 163, 74, 0.1);
+  background-color: hsl(146 58% 40% / 0.12);
 }
 
 .success-border {
-  border-color: #16A34A;
+  border-color: hsl(146 58% 40%);
 }
 
 /* Error states */
 .error-text {
-  color: #DC2626; /* Error red */
+  color: hsl(var(--destructive));
 }
 
 .error-bg {
-  background-color: rgba(220, 38, 38, 0.1);
+  background-color: hsl(var(--destructive) / 0.12);
 }
 
 .error-border {
-  border-color: #DC2626;
+  border-color: hsl(var(--destructive));
 }
 
 /* Grammar correction highlight - subtle */
 .correction-highlight {
-  background-color: rgba(220, 38, 38, 0.1);
-  border-bottom: 2px solid #DC2626;
+  background-color: hsl(var(--destructive) / 0.12);
+  border-bottom: 2px solid hsl(var(--destructive));
   padding: 0 2px;
 }
 
 /* Praise text for "Bra!" messages */
 .praise-text {
-  color: #16A34A; /* Success green */
+  color: hsl(146 58% 40%);
   font-weight: 600;
 }
 

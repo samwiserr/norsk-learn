@@ -1,0 +1,14 @@
+---
+description: Security, QA, review, and release gates for public APIs and critical user flows
+alwaysApply: true
+---
+
+# Quality Gates
+
+- Any change to `app/api/**/*`, `middleware.ts`, `lib/config.ts`, auth, speech, Stripe, or AI flows requires a `Senior Security` pass for validation, secret handling, safe logging, and abuse prevention.
+- Public endpoints such as `conversation`, `conversation-stream`, `openai-realtime`, `azure-speech-token`, `pronunciation`, and `checkout` also require a `Senior SecOps` pass for rate limiting, monitoring, error visibility, and operational fallback behavior.
+- Keep AI-rendered output safe. If content reaches the UI as HTML or rich text, preserve sanitization and review XSS risk around `src/components/SafeHtml` and related rendering paths.
+- Use `Senior QA` to define regression coverage before merge. Minimum focus areas are onboarding and level selection, writing exercise start, chat send and receive, speaking access, and API failure states.
+- Prefer Jest for unit and route-level logic, and Playwright for end-to-end user flows.
+- Run `Code Reviewer` as the final pre-merge pass for readability, edge cases, and missing tests.
+- If a change affects `Dockerfile`, `docker-compose.yml`, `playwright.config.ts`, `jest.config.js`, build scripts, or environment contracts, run a `Senior DevOps` pass before release.

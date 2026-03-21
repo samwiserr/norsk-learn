@@ -7,7 +7,9 @@ import {
   getGrammarTopicsForLevel,
   type ExerciseMode,
 } from "@/lib/exercise-modes";
-import "./exercise-picker.css";
+import { useLanguageContext } from "@/src/context/LanguageContext";
+import { getTranslation, type LanguageCode, type Translations } from "@/lib/languages";
+import { cn } from "@/lib/utils";
 
 interface ExercisePickerProps {
   cefrLevel: string;
@@ -16,15 +18,29 @@ interface ExercisePickerProps {
 
 type Step = "mode" | "topic" | "grammar";
 
-const EXERCISE_LABELS: Record<string, Record<string, string>> = {
+type LabelRow = Partial<Record<LanguageCode, string>> & { en: string };
+
+const EXERCISE_LABELS: Record<string, LabelRow> = {
   exerciseFreeConversation: { en: "Free Conversation", no: "Fri samtale" },
-  exerciseFreeConversationDesc: { en: "Chat freely with the tutor about anything", no: "Snakk fritt med veilederen om hva som helst" },
+  exerciseFreeConversationDesc: {
+    en: "Chat freely with the tutor about anything",
+    no: "Snakk fritt med veilederen om hva som helst",
+  },
   exerciseTranslation: { en: "Translation Practice", no: "Oversettelsesøvelse" },
-  exerciseTranslationDesc: { en: "Translate sentences between your language and Norwegian", no: "Oversett setninger mellom språket ditt og norsk" },
+  exerciseTranslationDesc: {
+    en: "Translate sentences between your language and Norwegian",
+    no: "Oversett setninger mellom språket ditt og norsk",
+  },
   exerciseGrammarDrill: { en: "Grammar Drill", no: "Grammatikkøvelse" },
-  exerciseGrammarDrillDesc: { en: "Focus on a specific grammar rule with targeted exercises", no: "Fokuser på en bestemt grammatikkregel med målrettede øvelser" },
+  exerciseGrammarDrillDesc: {
+    en: "Focus on a specific grammar rule with targeted exercises",
+    no: "Fokuser på en bestemt grammatikkregel med målrettede øvelser",
+  },
   exerciseTopicPractice: { en: "Topic Practice", no: "Temaøvelse" },
-  exerciseTopicPracticeDesc: { en: "Practice vocabulary and phrases around a specific topic", no: "Øv på ordforråd og fraser rundt et bestemt tema" },
+  exerciseTopicPracticeDesc: {
+    en: "Practice vocabulary and phrases around a specific topic",
+    no: "Øv på ordforråd og fraser rundt et bestemt tema",
+  },
 };
 
 const TOPIC_LABELS: Record<string, string> = {
@@ -57,7 +73,15 @@ const GRAMMAR_LABELS: Record<string, string> = {
   grammarRelativeClauses: "Relative Clauses (som, der)",
 };
 
+function pickLabel(row: LabelRow | undefined, lang: LanguageCode): string {
+  if (!row) return "";
+  return row[lang] ?? row.en;
+}
+
 export default function ExercisePicker({ cefrLevel, onSelect }: ExercisePickerProps) {
+  const { language } = useLanguageContext();
+  const t = (key: keyof Translations) => getTranslation(language, key);
+
   const [step, setStep] = useState<Step>("mode");
   const [selectedMode, setSelectedMode] = useState<ExerciseMode | null>(null);
 
@@ -82,24 +106,47 @@ export default function ExercisePicker({ cefrLevel, onSelect }: ExercisePickerPr
     setSelectedMode(null);
   };
 
+  const shellClass = cn("mx-auto flex w-full max-w-xl flex-col items-stretch px-4 py-8 sm:px-6");
+
+  const gridClass = "grid w-full grid-cols-1 gap-3 sm:grid-cols-2";
+
+  const cardBtnClass = cn(
+    "flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-5 text-center shadow-sm transition-all",
+    "hover:border-primary/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+    "active:scale-[0.99]",
+  );
+
+  const smallCardBtnClass = cn(
+    cardBtnClass,
+    "flex-row justify-start gap-3 p-4 text-left",
+  );
+
   if (step === "topic") {
     const topics = getTopicsForLevel(cefrLevel);
     return (
-      <div className="exercise-picker">
-        <button type="button" className="exercise-back-btn" onClick={handleBack}>
-          ← Back
+      <div className={shellClass}>
+        <button
+          type="button"
+          className="mb-4 self-start text-sm font-medium text-primary hover:underline"
+          onClick={handleBack}
+        >
+          ← {t("back")}
         </button>
-        <h3 className="exercise-picker-title">Choose a topic</h3>
-        <div className="exercise-grid">
+        <h3 className="mb-1 text-lg font-semibold text-foreground">{t("exerciseChooseTopic")}</h3>
+        <div className={cn(gridClass, "mt-4")}>
           {topics.map((topic) => (
             <button
               key={topic.id}
               type="button"
-              className="exercise-card exercise-card-small"
+              className={smallCardBtnClass}
               onClick={() => handleTopicSelect(topic.id)}
             >
-              <span className="exercise-icon">{topic.icon}</span>
-              <span className="exercise-label">{TOPIC_LABELS[topic.labelKey] ?? topic.id}</span>
+              <span className="text-xl shrink-0" aria-hidden>
+                {topic.icon}
+              </span>
+              <span className="font-semibold text-sm text-foreground">
+                {TOPIC_LABELS[topic.labelKey] ?? topic.id}
+              </span>
             </button>
           ))}
         </div>
@@ -110,21 +157,29 @@ export default function ExercisePicker({ cefrLevel, onSelect }: ExercisePickerPr
   if (step === "grammar") {
     const grammarTopics = getGrammarTopicsForLevel(cefrLevel);
     return (
-      <div className="exercise-picker">
-        <button type="button" className="exercise-back-btn" onClick={handleBack}>
-          ← Back
+      <div className={shellClass}>
+        <button
+          type="button"
+          className="mb-4 self-start text-sm font-medium text-primary hover:underline"
+          onClick={handleBack}
+        >
+          ← {t("back")}
         </button>
-        <h3 className="exercise-picker-title">Choose a grammar focus</h3>
-        <div className="exercise-grid">
+        <h3 className="mb-1 text-lg font-semibold text-foreground">{t("exerciseChooseGrammar")}</h3>
+        <div className={cn(gridClass, "mt-4")}>
           {grammarTopics.map((gt) => (
             <button
               key={gt.id}
               type="button"
-              className="exercise-card exercise-card-small"
+              className={smallCardBtnClass}
               onClick={() => handleTopicSelect(gt.id)}
             >
-              <span className="exercise-icon">📝</span>
-              <span className="exercise-label">{GRAMMAR_LABELS[gt.labelKey] ?? gt.id}</span>
+              <span className="text-lg shrink-0" aria-hidden>
+                📝
+              </span>
+              <span className="font-semibold text-sm text-foreground">
+                {GRAMMAR_LABELS[gt.labelKey] ?? gt.id}
+              </span>
             </button>
           ))}
         </div>
@@ -133,23 +188,23 @@ export default function ExercisePicker({ cefrLevel, onSelect }: ExercisePickerPr
   }
 
   return (
-    <div className="exercise-picker">
-      <h3 className="exercise-picker-title">How would you like to practice?</h3>
-      <p className="exercise-picker-subtitle">Choose an exercise mode to get started</p>
-      <div className="exercise-grid">
+    <div className={shellClass}>
+      <h3 className="text-center text-lg font-semibold text-foreground sm:text-xl">{t("exerciseHowPractice")}</h3>
+      <p className="mb-6 text-center text-sm text-muted-foreground">{t("exerciseChooseModeSubtitle")}</p>
+      <div className={gridClass}>
         {EXERCISE_MODES.map((mode) => (
           <button
             key={mode.id}
             type="button"
-            className="exercise-card"
+            className={cardBtnClass}
             onClick={() => handleModeSelect(mode.id)}
           >
-            <span className="exercise-icon">{mode.icon}</span>
-            <span className="exercise-label">
-              {EXERCISE_LABELS[mode.labelKey]?.en ?? mode.id}
+            <span className="text-2xl" aria-hidden>
+              {mode.icon}
             </span>
-            <span className="exercise-desc">
-              {EXERCISE_LABELS[mode.descKey]?.en ?? ""}
+            <span className="font-semibold text-foreground">{pickLabel(EXERCISE_LABELS[mode.labelKey], language)}</span>
+            <span className="text-xs leading-snug text-muted-foreground">
+              {pickLabel(EXERCISE_LABELS[mode.descKey], language)}
             </span>
           </button>
         ))}

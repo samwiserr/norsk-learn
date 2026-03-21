@@ -5,12 +5,14 @@ const log = createLogger("DataWipe");
 
 const LEARNING_DATA_KEYS = [
   "norsk_sessions",
+  "norsk_session_bundle_updated_at",
   "norsk_user_message_count",
   "norsk_srs_cards",
   "norsk_gamification",
   "norsk_level_metrics",
   "norsk_sync_queue",
   "norsk_cefr_level",
+  "norsk_tutor_analytics_v1",
 ] as const;
 
 /**

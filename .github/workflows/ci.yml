@@ -9,6 +9,14 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      GEMINI_API_KEY: ci-placeholder
+      NEXT_PUBLIC_FIREBASE_API_KEY: ci-placeholder
+      NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ci-placeholder
+      NEXT_PUBLIC_FIREBASE_PROJECT_ID: ci-placeholder
+      NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ci-placeholder
+      NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ci-placeholder
+      NEXT_PUBLIC_FIREBASE_APP_ID: ci-placeholder
     
     strategy:
       matrix:
@@ -26,24 +34,61 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
       - name: Lint
-        run: npx next lint
-        continue-on-error: true
+        run: npm run lint
 
       - name: Type check
         run: npx tsc --noEmit
-        continue-on-error: true
 
-      - name: Test
-        run: npm test -- --passWithNoTests
+      - name: Test (release gate)
+        run: npm run test:gate
+
+      - name: Test (backend QA coverage + thresholds)
+        run: npm run test:backend-qa
+
+      - name: Upload backend QA coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-qa-coverage
+          path: .coverage/backend-qa
+
+      - name: Test (frontend gate)
+        run: npm run test:frontend-gate
 
       - name: Build
         run: npm run build
-        env:
-          GEMINI_API_KEY: ci-placeholder
-          NEXT_PUBLIC_FIREBASE_API_KEY: ci-placeholder
-          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ci-placeholder
-          NEXT_PUBLIC_FIREBASE_PROJECT_ID: ci-placeholder
-          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ci-placeholder
-          NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ci-placeholder
-          NEXT_PUBLIC_FIREBASE_APP_ID: ci-placeholder
+
+      - name: Docker build (runtime image)
+        run: docker build -t norsk-tutor:ci-${{ github.sha }} .
+
+      - name: Docker runtime smoke test (/api/healthz)
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run -d --rm --name norsk-tutor-smoke -p 3000:3000 \
+            -e GEMINI_API_KEY=ci-placeholder \
+            -e NEXT_PUBLIC_FIREBASE_API_KEY=ci-placeholder \
+            -e NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=ci-placeholder \
+            -e NEXT_PUBLIC_FIREBASE_PROJECT_ID=ci-placeholder \
+            -e NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=ci-placeholder \
+            -e NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=ci-placeholder \
+            -e NEXT_PUBLIC_FIREBASE_APP_ID=ci-placeholder \
+            norsk-tutor:ci-${{ github.sha }}
+
+          for i in {1..30}; do
+            if curl -fsS "http://127.0.0.1:3000/api/healthz" > /dev/null; then
+              echo "Health check passed."
+              docker stop norsk-tutor-smoke
+              exit 0
+            fi
+            sleep 2
+          done
+
+          echo "Health check failed. Container logs:"
+          docker logs norsk-tutor-smoke || true
+          docker stop norsk-tutor-smoke || true
+          exit 1

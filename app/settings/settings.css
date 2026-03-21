@@ -1,6 +1,7 @@
 .settings-page-container {
   min-height: 100vh;
-  background: #FFFFFF; /* White container background - matches user requirement */
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
   padding: 0;
 }
 
@@ -8,9 +9,9 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  background: #FFFFFF; /* White background to prevent content showing through when scrolling */
-  backdrop-filter: blur(10px); /* Add blur effect for modern look */
-  border-bottom: 1px solid #E5E7EB; /* Subtle border for separation */
+  background: hsl(var(--background) / 0.92);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid hsl(var(--border));
   padding: 16px 24px;
   display: flex;
   align-items: center;
@@ -29,20 +30,20 @@
   cursor: pointer;
   transition: all 0.2s ease;
   background: transparent;
-  border: 1px solid #E5E7EB; /* Borders */
-  color: #1F2937; /* Primary text */
+  border: 1px solid hsl(var(--border));
+  color: hsl(var(--foreground));
   font-family: inherit;
 }
 
 .settings-back-button:hover {
-  background: #F8F9FA;
-  border-color: #1F2937; /* Dark slate */
+  background: hsl(var(--muted) / 0.35);
+  border-color: hsl(var(--foreground));
 }
 
 .settings-page-title {
   font-size: 24px;
   font-weight: 700;
-  color: #1F2937; /* Primary text */
+  color: hsl(var(--foreground));
   margin: 0;
 }
 
@@ -54,8 +55,8 @@
 }
 
 .settings-section {
-  background: #F7F8FA; /* Light grey background - matches user requirement */
-  border: 1px solid #E5E7EB; /* Borders */
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
   border-radius: 12px;
   padding: 24px;
   margin-bottom: 24px;
@@ -68,13 +69,13 @@
 .settings-section-title {
   font-size: 18px;
   font-weight: 600;
-  color: #1F2937; /* Primary text */
+  color: hsl(var(--foreground));
   margin: 0 0 8px 0;
 }
 
 .settings-section-description {
   font-size: 14px;
-  color: #6B7280; /* Secondary text */
+  color: hsl(var(--muted-foreground));
   margin: 0 0 20px 0;
   line-height: 1.6;
 }
@@ -534,5 +535,45 @@
   .language-selector-mobile-trigger {
     display: none;
   }
+}
+
+/* Soft UI refresh overrides */
+.settings-page-content .settings-section {
+  background: hsl(var(--card) / 0.94);
+  border-color: hsl(var(--border) / 0.8);
+  border-radius: 18px;
+  box-shadow: 0 14px 28px hsl(224 30% 30% / 0.09), 0 5px 12px hsl(224 30% 30% / 0.05);
+}
+
+.settings-back-button {
+  border-radius: 12px;
+  background: hsl(var(--card) / 0.8);
+}
+
+.settings-page-header {
+  background: hsl(var(--card) / 0.75);
+  border-bottom-color: hsl(var(--border) / 0.8);
+}
+
+.settings-section .language-selector-item,
+.language-selector-mobile-trigger,
+.language-selector-mobile-item {
+  border-color: hsl(var(--border));
+  background: hsl(var(--card));
+  border-radius: 12px;
+  color: hsl(var(--foreground));
+}
+
+.settings-section .language-selector-item:hover,
+.language-selector-mobile-trigger:hover,
+.language-selector-mobile-item:hover {
+  box-shadow: 0 8px 16px hsl(224 30% 30% / 0.09);
+}
+
+.language-selector-mobile-content {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: 18px;
+  box-shadow: 0 20px 36px hsl(224 30% 20% / 0.2);
 }
 

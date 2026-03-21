@@ -1,6 +1,7 @@
 "use client";
 
 import { getVocabStats } from "@/lib/vocabulary-tracker";
+import "./exercise-picker.css";
 
 interface ExerciseSummaryProps {
   score: number;

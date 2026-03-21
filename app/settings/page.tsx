@@ -11,6 +11,7 @@ import { StorageService } from "@/src/services/storageService";
 import { loadAllSessionsFromFirestore, deleteSessionFromFirestore } from "@/lib/firebase/sync";
 import { loadFromLocalStorage } from "@/lib/storage";
 import ConfirmDialog from "@/src/components/ConfirmDialog";
+import { cn } from "@/lib/utils";
 import "./settings.css";
 
 const FLAG_MAP: Record<LanguageCode, string> = {
@@ -54,7 +55,7 @@ export default function SettingsPage() {
         setLanguageState(contextLanguage);
       }
     }
-  }, []);
+  }, [contextLanguage]);
   
   // Update language when context language changes or when ready
   useEffect(() => {
@@ -211,48 +212,6 @@ export default function SettingsPage() {
     },
   ];
 
-  // Add critical CSS to prevent flash of unstyled content
-  useEffect(() => {
-    if (typeof document !== 'undefined') {
-      const styleId = 'language-selector-critical-css';
-      if (!document.getElementById(styleId)) {
-        const style = document.createElement('style');
-        style.id = styleId;
-        style.textContent = `
-          .language-selector-list {
-            display: flex !important;
-            flex-direction: row !important;
-            flex-wrap: wrap !important;
-            gap: 8px !important;
-            align-items: center !important;
-            min-height: 36px !important;
-          }
-          .language-selector-item {
-            display: flex !important;
-            align-items: center !important;
-            gap: 8px !important;
-            padding: 8px 12px !important;
-            border: 1px solid rgba(0, 0, 0, 0.1) !important;
-            border-radius: 8px !important;
-            background: #fff !important;
-            font-size: 14px !important;
-            color: #1a1a1a !important;
-            white-space: nowrap !important;
-            min-width: fit-content !important;
-            box-sizing: border-box !important;
-          }
-          .language-selector-item.active {
-            background: rgba(37, 99, 235, 0.1) !important;
-            border-color: #2563eb !important;
-            border-width: 2px !important;
-            font-weight: 600 !important;
-          }
-        `;
-        document.head.appendChild(style);
-      }
-    }
-  }, []);
-
   // Don't render until mounted (client-side only) to avoid hydration mismatch
   // Show a placeholder to prevent layout shift
   if (!mounted) {
@@ -296,19 +255,27 @@ export default function SettingsPage() {
               {t("languageDescription") || "Select your preferred interface language."}
             </p>
             {/* Desktop Language Selection */}
-            <div className="language-selector-list">
+            <div className="flex min-h-9 flex-row flex-wrap items-center gap-2">
               {SUPPORTED_LANGUAGES.map((lang) => (
                 <button
                   key={lang.code}
                   type="button"
-                  className={`language-selector-item ${lang.code === language ? "active" : ""}`}
+                  className={cn(
+                    "box-border flex min-w-fit items-center gap-2 whitespace-nowrap rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground transition-colors",
+                    "hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    lang.code === language && "border-2 border-primary bg-primary/10 font-semibold",
+                  )}
                   onClick={() => handleLanguageChange(lang.code)}
                 >
-                  <span style={{ fontSize: "18px" }}>{FLAG_MAP[lang.code]}</span>
+                  <span className="text-lg" aria-hidden>
+                    {FLAG_MAP[lang.code]}
+                  </span>
                   <span>{lang.nativeName}</span>
-                  {lang.code === language && (
-                    <span style={{ fontSize: "14px", fontWeight: 600 }}>✓</span>
-                  )}
+                  {lang.code === language ? (
+                    <span className="text-sm font-semibold" aria-hidden>
+                      ✓
+                    </span>
+                  ) : null}
                 </button>
               ))}
             </div>

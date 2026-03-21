@@ -33,6 +33,14 @@ dist-ssr
 # Testing
 coverage
 .nyc_output
+review-report.json
+review-report.md
+.coverage/
+test-results/
+playwright-report/
+
+# Cursor (keep rules; skip bundled skill data)
+.cursor/skills/
 
 # Next.js
 .next

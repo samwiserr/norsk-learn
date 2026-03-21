@@ -23,10 +23,11 @@ const AuthButtons = () => {
           onClick={() => router.push("/auth")}
         >
           {user.photoURL ? (
-            <img
-              src={user.photoURL}
-              alt={user.displayName || user.email || "Account"}
+            <span
               className="user-avatar"
+              role="img"
+              aria-label={user.displayName || user.email || "Account"}
+              style={{ backgroundImage: `url(${user.photoURL})`, backgroundSize: "cover", backgroundPosition: "center" }}
             />
           ) : (
             <span className="user-initial">

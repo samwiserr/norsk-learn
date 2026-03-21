@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import { addBreadcrumb, captureException } from "@sentry/nextjs";
 import { buildRealtimeTutorPrompt } from "@/lib/conversation-prompts";
+import { ApiService } from "@/src/services/apiService";
 
 interface RealtimeTutorConfig {
     onTranscript: (role: "user" | "assistant", text: string) => void;
@@ -115,13 +116,11 @@ export function useRealtimeTutor(config: RealtimeTutorConfig) {
                 data: { userLanguage, cefrLevel, uiLanguage },
             });
 
-            const tokenRes = await fetch("/api/openai-realtime", { method: "POST" });
-            if (!tokenRes.ok) {
-                const detail = await tokenRes.json().catch(() => ({}));
-                throw new Error(detail.error || "Failed to fetch realtime token");
-            }
-            const tokenData = await tokenRes.json();
-            const clientSecret = tokenData.client_secret?.value || tokenData.client_secret;
+            const tokenData = await ApiService.mintOpenaiRealtimeSession();
+            const clientSecret =
+                typeof tokenData.client_secret === "string"
+                    ? tokenData.client_secret
+                    : tokenData.client_secret?.value;
             const model = tokenData.model;
             if (!clientSecret) {
                 throw new Error("Missing client_secret from token response");

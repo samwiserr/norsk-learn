@@ -1,3 +1,5 @@
+import "server-only";
+
 import { CEFRLevel } from "@/lib/cefr";
 import { LanguageCode } from "@/lib/languages";
 

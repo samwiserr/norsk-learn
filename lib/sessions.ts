@@ -2,11 +2,20 @@ import { CEFRLevel } from "./cefr";
 
 export type Role = "user" | "assistant" | "assistant-streaming";
 
+export interface PronunciationScores {
+  accuracy: number;
+  fluency: number;
+  completeness: number;
+}
+
 export interface Message {
   id: string;
   role: Role;
   content: string;
   timestamp: number;
+  /** When set, this turn originated from voice mode (for unified session history). */
+  source?: "writing" | "speaking";
+  pronunciation?: PronunciationScores;
 }
 
 export interface Session {

@@ -4,6 +4,7 @@
   width: 100%;
   overflow: hidden;
   position: relative;
+  background: linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--secondary) / 0.45) 100%);
 }
 
 .loading-container {
@@ -12,7 +13,7 @@
   justify-content: center;
   min-height: 100vh;
   font-size: 18px;
-  color: #64748b;
+  color: hsl(var(--muted-foreground));
 }
 
 .sidebar-overlay {
@@ -21,7 +22,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: hsl(225 30% 20% / 0.28);
+  backdrop-filter: blur(2px);
   z-index: 999;
   display: none;
 }

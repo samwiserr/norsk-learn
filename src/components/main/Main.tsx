@@ -2,30 +2,22 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Virtuoso, VirtuosoHandle } from "react-virtuoso";
+import type { VirtuosoHandle } from "react-virtuoso";
 import "./main.css";
-import { assets } from "@/src/assets/assets";
 import { useSessionContext } from "@/src/context/SessionContext";
 import { useLanguageContext } from "@/src/context/LanguageContext";
 import ProgressBar from "@/src/components/ProgressBar";
 import { getTranslation } from "@/lib/languages";
-import AuthButtons from "@/src/components/auth/AuthButtons";
 import AuthModal from "@/src/components/auth/AuthModal";
-import SafeHtml from "@/src/components/SafeHtml";
-import ExercisePicker from "@/src/components/writing/ExercisePicker";
-import ExerciseSummary from "@/src/components/writing/ExerciseSummary";
-import { Message } from "@/lib/sessions";
+import { AuthNudgeBanner } from "@/src/components/auth/AuthNudgeBanner";
+import { CUSTOM_EVENTS, SESSION_STORAGE_KEYS } from "@/lib/constants";
 import type { ExerciseMode } from "@/lib/exercise-modes";
-
-const getImageSrc = (image: string | { src?: string }) =>
-  typeof image === "string" ? image : image?.src ?? "";
-
-const MODE_LABELS: Record<string, string> = {
-  free_conversation: "Free Conversation",
-  translation: "Translation",
-  grammar_drill: "Grammar Drill",
-  topic_practice: "Topic Practice",
-};
+import { MODE_LABELS } from "./mainUtils";
+import { MainChatHeader } from "./MainChatHeader";
+import { MainExerciseBar } from "./MainExerciseBar";
+import { MainMessageArea } from "./MainMessageArea";
+import { MainComposer } from "./MainComposer";
+import { Button } from "@/src/components/ui/button";
 
 interface MainProps {
   onMenuClick?: () => void;
@@ -49,38 +41,58 @@ const Main = ({ onMenuClick }: MainProps) => {
   } = useSessionContext();
   const { language } = useLanguageContext();
 
-  const t = (key: any) => getTranslation(language, key);
+  const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(language, key);
 
   const virtuosoRef = useRef<VirtuosoHandle>(null);
-  const inputElRef = useRef<HTMLInputElement | null>(null);
+  const inputElRef = useRef<HTMLInputElement>(null);
   const [localInput, setLocalInput] = useState("");
   const [showJumpToBottom, setShowJumpToBottom] = useState(false);
   const [atBottom, setAtBottom] = useState(true);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showAuthNudge, setShowAuthNudge] = useState(false);
+  const [speakingFallbackMsg, setSpeakingFallbackMsg] = useState<string | null>(null);
   const [summaryDismissedAt, setSummaryDismissedAt] = useState(0);
 
   const messages = activeSession?.messages ?? [];
-
-  const shouldShowPicker = !exerciseMode && messages.length === 0 && !!cefrLevel;
+  /** Welcome / tutor-only turns should not hide the exercise picker — user must still choose a mode. */
+  const hasUserMessage = messages.some((m) => m.role === "user");
+  const shouldShowPicker = !exerciseMode && !!cefrLevel && !hasUserMessage;
   const inputGated = shouldShowPicker;
   const SUMMARY_INTERVAL = 5;
-  const shouldShowSummary =
+  const shouldShowSummary = Boolean(
     exerciseMode &&
-    exerciseTurns > 0 &&
-    exerciseTurns % SUMMARY_INTERVAL === 0 &&
-    exerciseTurns !== summaryDismissedAt &&
-    !loading;
+      exerciseTurns > 0 &&
+      exerciseTurns % SUMMARY_INTERVAL === 0 &&
+      exerciseTurns !== summaryDismissedAt &&
+      !loading,
+  );
 
   useEffect(() => {
     const handleAuthRequired = () => setShowAuthModal(true);
-    window.addEventListener("auth-required", handleAuthRequired);
-    return () => window.removeEventListener("auth-required", handleAuthRequired);
+    const handleAuthNudge = () => setShowAuthNudge(true);
+    window.addEventListener(CUSTOM_EVENTS.AUTH_REQUIRED, handleAuthRequired);
+    window.addEventListener(CUSTOM_EVENTS.AUTH_NUDGE, handleAuthNudge);
+    return () => {
+      window.removeEventListener(CUSTOM_EVENTS.AUTH_REQUIRED, handleAuthRequired);
+      window.removeEventListener(CUSTOM_EVENTS.AUTH_NUDGE, handleAuthNudge);
+    };
   }, []);
 
-  const handleAtBottomChange = useCallback((bottom: boolean) => {
-    setAtBottom(bottom);
-    setShowJumpToBottom(!bottom && messages.length > 0);
-  }, [messages.length]);
+  useEffect(() => {
+    const msg = sessionStorage.getItem(SESSION_STORAGE_KEYS.SPEAKING_FALLBACK_NOTICE);
+    if (msg) {
+      sessionStorage.removeItem(SESSION_STORAGE_KEYS.SPEAKING_FALLBACK_NOTICE);
+      setSpeakingFallbackMsg(msg);
+    }
+  }, []);
+
+  const handleAtBottomChange = useCallback(
+    (bottom: boolean) => {
+      setAtBottom(bottom);
+      setShowJumpToBottom(!bottom && messages.length > 0);
+    },
+    [messages.length],
+  );
 
   useEffect(() => {
     if (atBottom && messages.length > 0) {
@@ -99,29 +111,10 @@ const Main = ({ onMenuClick }: MainProps) => {
     setExerciseMode(mode, topicId);
   };
 
-  const lastAssistantHadFixes = messages.length > 0 &&
+  const lastAssistantHadFixes =
+    messages.length > 0 &&
     messages[messages.length - 1]?.role === "assistant" &&
     messages[messages.length - 1]?.content?.includes("tutor-tag-must_fix");
-
-  const renderMessage = useCallback((_index: number, message: Message) => {
-    const isStreaming = message.role === "assistant-streaming";
-    const isUser = message.role === "user";
-    return (
-      <div
-        className={`message-bubble ${isUser ? "user-message" : "ai-message"} ${isStreaming ? "streaming" : ""}`}
-      >
-        <div className="message-content">
-          {isStreaming ? (
-            <div className="loading-indicator">
-              <span></span><span></span><span></span>
-            </div>
-          ) : (
-            <SafeHtml content={message.content.replace(/\n/g, "<br/>")} />
-          )}
-        </div>
-      </div>
-    );
-  }, []);
 
   const handleSend = () => {
     const raw = localInput.trim() || inputElRef.current?.value?.trim() || "";
@@ -148,122 +141,88 @@ const Main = ({ onMenuClick }: MainProps) => {
 
   return (
     <div className="main-chat-container" id="main-content" role="main">
-      <div className="chat-header">
-        <div className="chat-header-left">
-          {onMenuClick && (
-            <button type="button" className="menu-button" onClick={onMenuClick} aria-label="Menu">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M2 4h16M2 10h16M2 16h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-              </svg>
-            </button>
-          )}
-          <div>
-            <h1 className="chat-header-title">{t("appTitle")}</h1>
-            <p className="chat-header-subtitle">{t("greetingSubtitle")}</p>
-          </div>
-        </div>
-        <div className="chat-header-right">
-          <AuthButtons />
-          <button type="button" className="header-button" onClick={() => router.push("/level-selection")}>
-            {t("changeLevel")}
-          </button>
-        </div>
-      </div>
+      <MainChatHeader
+        onMenuClick={onMenuClick}
+        title={t("appTitle")}
+        subtitle={t("greetingSubtitle")}
+        changeLevelLabel={t("changeLevel")}
+        onChangeLevel={() => router.push("/level-selection")}
+      />
 
       <ProgressBar />
 
-      {exerciseModeLabel && (
-        <div className="exercise-mode-bar">
-          <span className="exercise-mode-label">{exerciseModeLabel}</span>
-          {exerciseTurns > 0 && (
-            <span className="exercise-score-badge">
-              {exerciseScore}/{exerciseTurns} correct
-            </span>
-          )}
-          <button type="button" className="exercise-mode-change" onClick={newChat}>
-            New Exercise
-          </button>
+      {showAuthNudge && (
+        <AuthNudgeBanner
+          title={t("authNudgeTitle")}
+          body={t("authNudgeBody")}
+          signInLabel={t("authNudgeSignIn")}
+          dismissLabel={t("authNudgeDismiss")}
+          onDismiss={() => setShowAuthNudge(false)}
+        />
+      )}
+
+      {speakingFallbackMsg && (
+        <div
+          className="mx-3 mt-3 flex flex-col gap-2 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm sm:mx-4 sm:flex-row sm:items-center sm:justify-between"
+          role="status"
+        >
+          <p className="text-foreground">{speakingFallbackMsg}</p>
+          <Button type="button" variant="ghost" size="sm" onClick={() => setSpeakingFallbackMsg(null)}>
+            {t("progressionDismiss")}
+          </Button>
         </div>
+      )}
+
+      {exerciseModeLabel && (
+        <MainExerciseBar
+          label={exerciseModeLabel}
+          exerciseScore={exerciseScore}
+          exerciseTurns={exerciseTurns}
+          scoreBadgeSuffix={t("exerciseCorrectLabel")}
+          newExerciseLabel={t("newExercise")}
+          onNewExercise={newChat}
+        />
       )}
 
       <div className="chat-area-wrapper">
         <div className="chat-area">
-          <div className="messages-container" aria-live="polite" aria-relevant="additions">
-            {shouldShowPicker ? (
-              <ExercisePicker cefrLevel={cefrLevel} onSelect={handleExerciseSelect} />
-            ) : !cefrLevel ? (
-              <div className="welcome-message">
-                <h2>{t("welcomeTitle")}</h2>
-                <p>{t("selectLevelSubtitle")}</p>
-              </div>
-            ) : messages.length > 0 ? (
-              <>
-                <Virtuoso
-                  ref={virtuosoRef}
-                  data={messages}
-                  itemContent={renderMessage}
-                  followOutput="smooth"
-                  atBottomStateChange={handleAtBottomChange}
-                  className="messages-list"
-                  style={{ flex: 1 }}
-                />
-                {lastAssistantHadFixes && !loading && (
-                  <div className="try-again-bar">
-                    <button type="button" className="try-again-btn" onClick={retryLastMessage}>
-                      Try again
-                    </button>
-                    {lastTutorHint && (
-                      <span className="try-again-hint">{lastTutorHint}</span>
-                    )}
-                  </div>
-                )}
-                {shouldShowSummary && exerciseMode && (
-                  <ExerciseSummary
-                    score={exerciseScore}
-                    turns={exerciseTurns}
-                    exerciseMode={exerciseMode}
-                    onContinue={() => setSummaryDismissedAt(exerciseTurns)}
-                    onNewExercise={newChat}
-                  />
-                )}
-              </>
-            ) : null}
-            {showJumpToBottom && (
-              <button type="button" className="jump-to-bottom" onClick={jumpToBottom} aria-label={t("jumpToBottom")}>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                  <path d="M8 12L4 8h8L8 12zm0-4L4 4h8L8 8z" />
-                </svg>
-                {t("jumpToBottom")}
-              </button>
-            )}
-          </div>
+          <MainMessageArea
+            virtuosoRef={virtuosoRef}
+            messages={messages}
+            cefrLevel={cefrLevel}
+            shouldShowPicker={shouldShowPicker}
+            onExerciseSelect={handleExerciseSelect}
+            welcomeTitle={t("welcomeTitle")}
+            selectLevelSubtitle={t("selectLevelSubtitle")}
+            atBottomStateChange={handleAtBottomChange}
+            lastAssistantHadFixes={!!lastAssistantHadFixes}
+            loading={loading}
+            onRetry={retryLastMessage}
+            tryAgainLabel={t("tryAgain")}
+            lastTutorHint={lastTutorHint ?? null}
+            shouldShowSummary={shouldShowSummary}
+            exerciseMode={exerciseMode}
+            exerciseScore={exerciseScore}
+            exerciseTurns={exerciseTurns}
+            onSummaryContinue={() => setSummaryDismissedAt(exerciseTurns)}
+            onNewExercise={newChat}
+            showJumpToBottom={showJumpToBottom}
+            onJumpToBottom={jumpToBottom}
+            jumpToBottomLabel={t("jumpToBottom")}
+          />
 
-          <div className={`input-container ${inputGated ? "input-gated" : ""}`}>
-            <div className="input-wrapper">
-              <input
-                type="text"
-                className="message-input"
-                ref={inputElRef}
-                value={localInput}
-                onChange={(e) => setLocalInput(e.target.value)}
-                onKeyDown={handleKeyPress}
-                placeholder={inputGated ? "Select an exercise mode above to begin..." : t("placeholder")}
-                disabled={loading || inputGated}
-              />
-              <div className="input-actions">
-                <button
-                  type="button"
-                  className="send-button"
-                  onClick={handleSend}
-                  disabled={!localInput.trim() || loading || inputGated}
-                  aria-label="Send"
-                >
-                  <img src={getImageSrc(assets.send_icon)} alt="Send" width={20} height={20} />
-                </button>
-              </div>
-            </div>
-            {!inputGated && <p className="input-disclaimer">{t("disclaimer")}</p>}
-          </div>
+          <MainComposer
+            inputRef={inputElRef}
+            value={localInput}
+            onChange={setLocalInput}
+            onKeyDown={handleKeyPress}
+            onSend={handleSend}
+            placeholder={inputGated ? t("selectExerciseToBegin") : t("placeholder")}
+            disclaimer={t("disclaimer")}
+            disabled={loading}
+            gated={inputGated}
+            canSend={!!localInput.trim()}
+          />
         </div>
       </div>
 

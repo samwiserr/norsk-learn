@@ -1,0 +1,14 @@
+---
+description: Repo-specific architecture boundaries for session state, pages, APIs, and integrations
+alwaysApply: true
+---
+
+# Architecture Boundaries
+
+- `src/context/SessionContext.tsx` owns session lifecycle, active session selection, exercise mode, score tracking, storage sync, and message send orchestration. Do not add page-only UI state or styling logic there.
+- Page files in `app/*/page.tsx` should handle routing, gating, and top-level composition. Move reusable behavior into hooks, services, or components instead of growing page files.
+- `src/components/main/Main.tsx` is the writing and chat shell. Preserve the contract between picker state, chat rendering, summary UI, and input gating.
+- Keep route handlers in `app/api/*/route.ts` thin: validate input, rate limit if public, call shared helpers or services, and return stable response shapes.
+- Centralize environment access in `lib/config.ts`. Avoid scattering raw `process.env` reads across components or route handlers.
+- Treat AI, speech, auth, and payment integrations as boundary modules. Keep provider-specific logic isolated and avoid leaking third-party response shapes through the app.
+- For features that cross session state, page navigation, and APIs, capture the boundary decision before coding and prefer incremental changes over broad rewrites.

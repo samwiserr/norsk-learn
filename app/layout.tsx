@@ -17,13 +17,7 @@ export const metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" data-theme="light" suppressHydrationWarning>
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `!function(){try{var t=localStorage.getItem("norsk_theme");("dark"===t||!t&&matchMedia("(prefers-color-scheme:dark)").matches)&&document.documentElement.setAttribute("data-theme","dark")}catch(e){}}()`,
-          }}
-        />
-      </head>
+      <head />
       <body className={inter.className}>
         <a href="#main-content" className="skip-link">
           Skip to main content

@@ -1,10 +1,21 @@
+function mockNextResponseJson(data: unknown, init: { status?: number; headers?: Record<string, string> } = {}) {
+  const h = new Map<string, string>(Object.entries(init.headers ?? {}));
+  return {
+    status: init.status ?? 200,
+    headers: {
+      get: (k: string) => h.get(k.toLowerCase()) ?? h.get(k) ?? null,
+      set: (k: string, v: string) => {
+        h.set(k, v);
+      },
+    },
+    json: async () => data,
+  };
+}
+
 jest.mock("next/server", () => ({
   NextResponse: {
-    json: (data: any, init: any = {}) => ({
-      status: init.status ?? 200,
-      headers: init.headers ?? {},
-      json: async () => data,
-    }),
+    json: (data: unknown, init?: { status?: number; headers?: Record<string, string> }) =>
+      mockNextResponseJson(data, init ?? {}),
   },
 }));
 

@@ -9,8 +9,8 @@ test.describe("Onboarding flow", () => {
 
   test("level-selection page shows CEFR levels", async ({ page }) => {
     await page.goto("/level-selection");
-    await expect(page.getByText("A1")).toBeVisible();
-    await expect(page.getByText("B2")).toBeVisible();
+    await expect(page.getByText("A1", { exact: true })).toBeVisible();
+    await expect(page.getByText("B2", { exact: true })).toBeVisible();
   });
 
   test("selecting a level navigates to chat", async ({ page }) => {

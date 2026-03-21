@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useLanguageContext } from "@/src/context/LanguageContext";
 import { FSRSCard, Rating, reviewCard, getDueCards, getCardStats } from "@/lib/srs/fsrs";
 import { loadCards, updateCard } from "@/lib/srs/storage";
+import { Button } from "@/src/components/ui";
 
 export default function ReviewPage() {
   const router = useRouter();
@@ -46,32 +47,29 @@ export default function ReviewPage() {
 
   if (dueCards.length === 0 && !sessionDone) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-[var(--bg-primary)]">
-        <div className="text-center max-w-md">
-          <h1 className="text-2xl font-bold mb-4">Review</h1>
-          <p className="text-[var(--text-secondary)] mb-6">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background p-6">
+        <div className="max-w-md text-center">
+          <h1 className="mb-4 text-2xl font-bold text-foreground">Review</h1>
+          <p className="mb-6 text-muted-foreground">
             No cards due for review. Keep practicing conversations to build your review deck.
           </p>
-          <div className="grid grid-cols-3 gap-4 mb-8 text-center">
+          <div className="mb-8 grid grid-cols-3 gap-4 text-center">
             <div>
-              <div className="text-2xl font-bold text-[var(--primary)]">{stats.total}</div>
-              <div className="text-xs text-[var(--text-secondary)]">Total</div>
+              <div className="text-2xl font-bold text-primary">{stats.total}</div>
+              <div className="text-xs text-muted-foreground">Total</div>
             </div>
             <div>
               <div className="text-2xl font-bold text-green-500">{stats.mature}</div>
-              <div className="text-xs text-[var(--text-secondary)]">Mature</div>
+              <div className="text-xs text-muted-foreground">Mature</div>
             </div>
             <div>
               <div className="text-2xl font-bold text-amber-500">{stats.learning}</div>
-              <div className="text-xs text-[var(--text-secondary)]">Learning</div>
+              <div className="text-xs text-muted-foreground">Learning</div>
             </div>
           </div>
-          <button
-            onClick={() => router.push("/")}
-            className="px-6 py-3 bg-[var(--primary)] text-white rounded-xl font-medium hover:opacity-90 transition"
-          >
+          <Button size="lg" className="rounded-xl" onClick={() => router.push("/")}>
             Back to Chat
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -79,61 +77,64 @@ export default function ReviewPage() {
 
   if (sessionDone) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-[var(--bg-primary)]">
-        <div className="text-center max-w-md">
-          <h1 className="text-2xl font-bold mb-2">Session Complete</h1>
-          <p className="text-[var(--text-secondary)] mb-6">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background p-6">
+        <div className="max-w-md text-center">
+          <h1 className="mb-2 text-2xl font-bold text-foreground">Session Complete</h1>
+          <p className="mb-6 text-muted-foreground">
             You reviewed {reviewed} card{reviewed !== 1 ? "s" : ""}.
           </p>
-          <button
-            onClick={() => router.push("/")}
-            className="px-6 py-3 bg-[var(--primary)] text-white rounded-xl font-medium hover:opacity-90 transition"
-          >
+          <Button size="lg" className="rounded-xl" onClick={() => router.push("/")}>
             Back to Chat
-          </button>
+          </Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-[var(--bg-primary)]">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background p-6">
       <div className="w-full max-w-lg">
-        <div className="flex justify-between items-center mb-6">
+        <div className="mb-6 flex items-center justify-between">
           <button
+            type="button"
             onClick={() => router.push("/")}
-            className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition"
+            className="text-sm text-muted-foreground transition hover:text-foreground"
           >
             &larr; Back
           </button>
-          <span className="text-sm text-[var(--text-secondary)]">
+          <span className="text-sm text-muted-foreground">
             {currentIndex + 1} / {dueCards.length}
           </span>
         </div>
 
         <div
-          className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 min-h-[280px] flex flex-col justify-center cursor-pointer"
+          className="flex min-h-[280px] cursor-pointer flex-col justify-center rounded-3xl border border-border/80 bg-card/95 p-8 shadow-[0_16px_30px_hsl(224_30%_30%_/_0.1)]"
           onClick={() => !showAnswer && setShowAnswer(true)}
           role="button"
           tabIndex={0}
-          onKeyDown={(e) => e.key === " " && !showAnswer && setShowAnswer(true)}
+          onKeyDown={(e) => {
+            if (e.key === " " || e.key === "Enter") {
+              e.preventDefault();
+              if (!showAnswer) setShowAnswer(true);
+            }
+          }}
         >
-          <div className="text-xs uppercase tracking-wide text-[var(--text-secondary)] mb-2">
+          <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
             {currentCard?.category}
           </div>
-          <div className="text-xl font-semibold mb-4">{currentCard?.front}</div>
+          <div className="mb-4 text-xl font-semibold text-card-foreground">{currentCard?.front}</div>
 
           {showAnswer ? (
-            <div className="border-t pt-4 mt-2">
-              <div className="text-lg text-[var(--text-secondary)]">{currentCard?.back}</div>
+            <div className="mt-2 border-t border-border pt-4">
+              <div className="text-lg text-muted-foreground">{currentCard?.back}</div>
             </div>
           ) : (
-            <div className="text-sm text-[var(--text-secondary)] italic">Tap to reveal answer</div>
+            <div className="text-sm italic text-muted-foreground">Tap to reveal answer</div>
           )}
         </div>
 
         {showAnswer && (
-          <div className="grid grid-cols-4 gap-3 mt-6">
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
             {[
               { rating: 1 as Rating, label: "Again", color: "bg-red-500" },
               { rating: 2 as Rating, label: "Hard", color: "bg-orange-500" },
@@ -142,8 +143,9 @@ export default function ReviewPage() {
             ].map(({ rating, label, color }) => (
               <button
                 key={rating}
+                type="button"
                 onClick={() => handleRate(rating)}
-                className={`${color} text-white py-3 rounded-xl font-medium hover:opacity-90 transition text-sm`}
+                className={`${color} rounded-2xl py-3 text-sm font-medium text-white transition hover:-translate-y-0.5 hover:opacity-95`}
               >
                 {label}
               </button>

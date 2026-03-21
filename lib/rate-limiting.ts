@@ -1,5 +1,6 @@
-import { config } from './config';
-import { createLogger } from './logger';
+import { config } from "./config";
+import { createLogger } from "./logger";
+import { getUpstashRedis } from "@/lib/infra/upstashRedis";
 
 const log = createLogger("RateLimit");
 
@@ -12,6 +13,8 @@ interface RateLimitResult {
 // ── In-memory fallback ─────────────────────────────────────────────────
 
 const memStore = new Map<string, { count: number; resetTime: number }>();
+
+let warnedInMemoryProduction = false;
 
 setInterval(() => {
   const now = Date.now();
@@ -46,29 +49,10 @@ async function rateLimitMemory(identifier: string): Promise<RateLimitResult> {
 
 // ── Redis backend (Upstash) ────────────────────────────────────────────
 
-let redisClient: import("@upstash/redis").Redis | null = null;
-
-function getRedis(): import("@upstash/redis").Redis | null {
-  if (redisClient) return redisClient;
-
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-  if (!url || !token) return null;
-
-  try {
-    const { Redis } = require("@upstash/redis") as typeof import("@upstash/redis");
-    redisClient = new Redis({ url, token });
-    return redisClient;
-  } catch {
-    log.warn("Failed to initialize Upstash Redis, falling back to in-memory");
-    return null;
-  }
-}
-
-async function rateLimitRedis(identifier: string): Promise<RateLimitResult> {
-  const redis = getRedis();
-  if (!redis) return rateLimitMemory(identifier);
-
+async function rateLimitRedis(
+  redis: NonNullable<ReturnType<typeof getUpstashRedis>>,
+  identifier: string
+): Promise<RateLimitResult> {
   const windowMs = config.rateLimit.windowMs;
   const maxRequests = config.rateLimit.maxRequests;
   const key = `rl:${identifier}`;
@@ -95,13 +79,22 @@ async function rateLimitRedis(identifier: string): Promise<RateLimitResult> {
 // ── Public API ─────────────────────────────────────────────────────────
 
 export async function rateLimit(identifier: string): Promise<RateLimitResult> {
-  const redis = getRedis();
-  return redis ? rateLimitRedis(identifier) : rateLimitMemory(identifier);
+  const redis = getUpstashRedis();
+  if (!redis) {
+    if (process.env.NODE_ENV === "production" && !warnedInMemoryProduction) {
+      warnedInMemoryProduction = true;
+      log.warn(
+        "Rate limit using in-memory store in production. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN for distributed limits and accurate abuse prevention."
+      );
+    }
+    return rateLimitMemory(identifier);
+  }
+  return rateLimitRedis(redis, identifier);
 }
 
 export function resetRateLimit(identifier: string): void {
   memStore.delete(identifier);
-  const redis = getRedis();
+  const redis = getUpstashRedis();
   if (redis) redis.del(`rl:${identifier}`).catch(() => {});
 }
 

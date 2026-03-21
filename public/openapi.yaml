@@ -1,0 +1,205 @@
+openapi: 3.0.3
+info:
+  title: Norsk Tutor Public API
+  version: "0.1.0"
+  description: |
+    Hand-maintained OpenAPI surface aligned with `lib/contracts/*` and `app/api/*` routes.
+    Request correlation header `x-request-id` is accepted on all routes; session sync uses `x-device-id`.
+servers:
+  - url: /
+paths:
+  /api/initial-question:
+    post:
+      summary: Initial tutor question (JSON)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [cefrLevel, language]
+              properties:
+                cefrLevel:
+                  type: string
+                  enum: [A1, A2, B1, B2]
+                language:
+                  type: string
+      responses:
+        "200":
+          description: Gemini JSON payload (welcome + first question)
+  /api/conversation:
+    post:
+      summary: Tutor turn (non-streaming JSON)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userInput
+                - cefrLevel
+                - currentProgress
+                - language
+                - conversationHistory
+              properties:
+                userInput: { type: string }
+                cefrLevel: { type: string }
+                currentProgress: { type: number, minimum: 0, maximum: 100 }
+                language: { type: string }
+                conversationHistory:
+                  type: array
+                  items:
+                    type: object
+                mode:
+                  type: string
+                  enum: [writing, speaking]
+                  default: writing
+                exerciseMode: { type: string }
+                topicId: { type: string }
+                turnType:
+                  type: string
+                  enum: [conversation, exercise_start]
+                  default: conversation
+      responses:
+        "200":
+          description: Tutor response (see tutorConversationResponseSchema)
+  /api/conversation-stream:
+    post:
+      summary: Tutor turn (SSE)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userInput
+                - cefrLevel
+                - currentProgress
+                - language
+                - conversationHistory
+              properties:
+                userInput: { type: string }
+                cefrLevel: { type: string }
+                currentProgress: { type: number, minimum: 0, maximum: 100 }
+                language: { type: string }
+                conversationHistory:
+                  type: array
+                  items:
+                    type: object
+                mode:
+                  type: string
+                  enum: [writing, speaking]
+                  default: writing
+                exerciseMode: { type: string }
+                topicId: { type: string }
+                turnType:
+                  type: string
+                  enum: [conversation, exercise_start]
+                  default: conversation
+      responses:
+        "200":
+          description: text/event-stream; events per sseEventSchema
+  /api/openai-realtime:
+    post:
+      summary: Mint OpenAI Realtime session
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                model: { type: string }
+                modalities:
+                  type: array
+                  items: { type: string }
+      responses:
+        "200":
+          description: client_secret + session metadata
+  /api/azure-speech-token:
+    get:
+      summary: Mint Azure Speech token
+      responses:
+        "200":
+          description: token + region + TTL
+  /api/checkout:
+    post:
+      summary: Stripe Checkout session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tutorId, rate]
+              properties:
+                tutorId: {}
+                tutorName: { type: string }
+                rate: { type: number }
+      responses:
+        "200":
+          description: "{ sessionId }"
+  /api/pronunciation:
+    post:
+      summary: Pronunciation assess proxy (multipart)
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Upstream JSON or audio
+  /api/sessions/sync:
+    post:
+      summary: Persist session snapshot (Redis when configured)
+      parameters:
+        - in: header
+          name: x-device-id
+          required: false
+          schema:
+            type: string
+            minLength: 8
+            maxLength: 128
+        - in: header
+          name: Authorization
+          required: false
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [snapshot]
+              properties:
+                snapshot:
+                  type: object
+                  properties:
+                    version: { type: integer }
+                    sessions:
+                      type: array
+                      items: { type: object }
+                    activeSessionId: { type: string }
+      responses:
+        "200":
+          description: Sync acknowledgement
+  /api/sessions/restore:
+    get:
+      summary: Load session snapshot
+      parameters:
+        - in: header
+          name: x-device-id
+          required: false
+          schema:
+            type: string
+        - in: header
+          name: Authorization
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "{ found, snapshot }"

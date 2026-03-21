@@ -11,7 +11,9 @@ import {
 } from "@/lib/languages";
 import { saveToLocalStorage, loadFromLocalStorage } from "@/lib/storage";
 import { detectBrowserLanguage } from "@/lib/browser-language";
-import "./language-selection.css";
+import { cn } from "@/lib/utils";
+import { AppPageScaffold } from "@/src/components/shell/AppPageScaffold";
+import { Card, CardContent } from "@/src/components/ui/card";
 
 const FLAG_MAP: Record<LanguageCode, string> = {
   en: "🇬🇧",
@@ -31,25 +33,18 @@ const FLAG_MAP: Record<LanguageCode, string> = {
 
 export default function LanguageSelectionPage() {
   const router = useRouter();
-  // Detect browser language
   const detectedLanguage = typeof window !== "undefined" ? detectBrowserLanguage() : DEFAULT_LANGUAGE;
-  
-  // Detect browser language for display
+
   const [displayLanguage, setDisplayLanguage] = useState<LanguageCode>(detectedLanguage);
-  // Pre-select detected language
   const [selectedLanguage, setSelectedLanguage] = useState<LanguageCode>(detectedLanguage);
 
-  // Check if language is already set - redirect if it is
   useEffect(() => {
     const stored = loadFromLocalStorage<string>("norsk_ui_language");
     if (stored && isValidLanguageCode(stored)) {
-      // Language already set, redirect to level selection
       router.push("/level-selection");
       return;
     }
-    
-    // No language set - pre-select detected language visually but don't auto-save
-    // Let user explicitly choose before saving and redirecting
+
     if (detectedLanguage && isValidLanguageCode(detectedLanguage)) {
       setSelectedLanguage(detectedLanguage);
       setDisplayLanguage(detectedLanguage);
@@ -59,33 +54,38 @@ export default function LanguageSelectionPage() {
   const handleLanguageSelect = (code: LanguageCode) => {
     setSelectedLanguage(code);
     setDisplayLanguage(code);
-    // Save language as default
     saveToLocalStorage("norsk_ui_language", code);
-    // Redirect to level selection
     router.push("/level-selection");
   };
 
-  // Use detected language for translations
-  const t = (key: "languageSelectionTitle" | "languageSelectionSubtitle") =>
-    getTranslation(displayLanguage, key);
+  const t = (key: "languageSelectionTitle" | "languageSelectionSubtitle") => getTranslation(displayLanguage, key);
 
   return (
-    <div className="language-selection-page">
-      <div className="language-selection-container">
-        <div className="language-selection-content">
-          <h1 className="language-selection-title" suppressHydrationWarning>
+    <AppPageScaffold maxWidth="wide" className="relative overflow-hidden">
+      <div
+        className="pointer-events-none absolute inset-0 opacity-40"
+        aria-hidden
+        style={{
+          background: "radial-gradient(circle at 30% 20%, hsl(var(--muted)) 0%, transparent 55%)",
+        }}
+      />
+      <div className="relative z-[1]">
+        <div className="mx-auto mb-10 max-w-2xl text-center">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl" suppressHydrationWarning>
             {t("languageSelectionTitle")}
           </h1>
-          <p className="language-selection-subtitle" suppressHydrationWarning>
+          <p className="mt-3 text-muted-foreground" suppressHydrationWarning>
             {t("languageSelectionSubtitle")}
           </p>
-          
-          <div className="languages-grid">
-            {SUPPORTED_LANGUAGES.map((lang) => (
+        </div>
+        <div className="mx-auto grid max-w-4xl grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {SUPPORTED_LANGUAGES.map((lang) => {
+            const selected = lang.code === selectedLanguage;
+            return (
               <button
                 key={lang.code}
                 type="button"
-                className={`language-card ${lang.code === selectedLanguage ? "selected" : ""}`}
+                className={cn("text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring")}
                 onClick={() => handleLanguageSelect(lang.code)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
@@ -94,20 +94,32 @@ export default function LanguageSelectionPage() {
                   }
                 }}
               >
-                <div className="language-flag">{FLAG_MAP[lang.code]}</div>
-                <div className="language-info">
-                  <div className="language-name">{lang.nativeName}</div>
-                  <div className="language-name-english">{lang.name}</div>
-                </div>
-                {lang.code === selectedLanguage && (
-                  <div className="language-check">✓</div>
-                )}
+                <Card
+                  className={cn(
+                    "h-full border-2 shadow-sm hover:border-primary/50 hover:shadow-md",
+                    selected ? "border-primary bg-primary/5" : "border-border bg-card",
+                  )}
+                >
+                  <CardContent className="relative flex items-center gap-4 p-5">
+                    <span className="text-3xl leading-none" aria-hidden>
+                      {FLAG_MAP[lang.code]}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="font-semibold text-foreground">{lang.nativeName}</div>
+                      <div className="text-sm text-muted-foreground">{lang.name}</div>
+                    </div>
+                    {selected ? (
+                      <span className="absolute right-3 top-3 text-lg font-semibold text-primary" aria-hidden>
+                        ✓
+                      </span>
+                    ) : null}
+                  </CardContent>
+                </Card>
               </button>
-            ))}
-          </div>
+            );
+          })}
         </div>
       </div>
-    </div>
+    </AppPageScaffold>
   );
 }
-
