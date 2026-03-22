@@ -1,4 +1,5 @@
 import { AppError } from './error-handling';
+import { randomUnit } from './secureRandom';
 
 export interface RetryOptions {
   maxRetries?: number;
@@ -62,7 +63,7 @@ export async function withRetry<T>(
       
       // Calculate delay with exponential backoff + jitter
       const delay = Math.min(
-        baseDelay * Math.pow(2, attempt) + Math.random() * 1000,
+        baseDelay * Math.pow(2, attempt) + randomUnit() * 1000,
         maxDelay
       );
       

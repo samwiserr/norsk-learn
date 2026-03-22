@@ -2,6 +2,8 @@
  * Opaque device id for server-owned session snapshots (stored locally only).
  */
 
+import { randomHexBytes } from "@/lib/secureRandom";
+
 const STORAGE_KEY = "norsk-tutor-device-id";
 
 export function getOrCreateDeviceId(): string {
@@ -12,7 +14,7 @@ export function getOrCreateDeviceId(): string {
     id =
       typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
         ? crypto.randomUUID()
-        : `dev_${Date.now()}_${Math.random().toString(36).slice(2, 12)}`;
+        : `dev_${Date.now()}_${randomHexBytes(8)}`;
     window.localStorage.setItem(STORAGE_KEY, id);
     return id;
   } catch {

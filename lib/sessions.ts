@@ -1,4 +1,5 @@
 import { CEFRLevel } from "./cefr";
+import { randomHexBytes } from "./secureRandom";
 
 export type Role = "user" | "assistant" | "assistant-streaming";
 
@@ -35,7 +36,7 @@ export interface Session {
 }
 
 export const createSessionId = () =>
-  `session_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+  `session_${Date.now()}_${randomHexBytes(6)}`;
 
 export const createNewSession = (
   level: CEFRLevel,

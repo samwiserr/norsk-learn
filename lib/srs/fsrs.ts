@@ -1,3 +1,5 @@
+import { randomHexBytes } from "@/lib/secureRandom";
+
 /**
  * Free Spaced Repetition Scheduler (FSRS) - simplified implementation
  * Based on the FSRS-4.5 algorithm with 4 states and power-law forgetting
@@ -83,7 +85,7 @@ export function createCard(
   language: string
 ): FSRSCard {
   return {
-    id: `srs_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+    id: `srs_${Date.now()}_${randomHexBytes(5)}`,
     front,
     back,
     category,

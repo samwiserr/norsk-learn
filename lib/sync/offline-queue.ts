@@ -1,3 +1,4 @@
+import { randomHexBytes } from "@/lib/secureRandom";
 import { saveToLocalStorage, loadFromLocalStorage } from "@/lib/storage";
 import { Session, validateSession } from "@/lib/sessions";
 
@@ -24,7 +25,7 @@ export const addToOfflineQueue = (
   const queue = getOfflineQueue();
   const operationWithMeta: QueuedOperation = {
     ...operation,
-    id: `op_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
+    id: `op_${Date.now()}_${randomHexBytes(6)}`,
     timestamp: Date.now(),
     retries: 0,
   };

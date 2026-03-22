@@ -1,3 +1,5 @@
+import { randomHexBytes } from "@/lib/secureRandom";
+
 export interface SyncMessage {
   type: "SESSION_UPDATED" | "SESSION_CREATED" | "SESSION_DELETED" | "SYNC_REQUEST" | "SYNC_RESPONSE";
   sessionId?: string;
@@ -19,7 +21,7 @@ export class MultiTabSync {
       return;
     }
     
-    this.tabId = `tab_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+    this.tabId = `tab_${Date.now()}_${randomHexBytes(6)}`;
     this.channel = new BroadcastChannel(SYNC_CHANNEL);
     this.channel.onmessage = (event) => this.handleMessage(event);
     

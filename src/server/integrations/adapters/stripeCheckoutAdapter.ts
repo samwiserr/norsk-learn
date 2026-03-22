@@ -9,7 +9,7 @@ export const stripeCheckoutAdapter: CheckoutPort = {
       tutorId: input.tutorId,
       tutorName: input.tutorName,
       rate: input.rate,
-      origin: input.origin,
+      appBaseUrl: input.appBaseUrl,
     });
     return { sessionId };
   },

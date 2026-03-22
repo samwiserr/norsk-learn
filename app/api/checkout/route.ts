@@ -7,20 +7,20 @@ import {
   jsonWithRequestId,
   apiErrorResponse,
 } from "@/lib/api/publicRoute";
+import { resolveTrustedAppBaseUrl } from "@/lib/appBaseUrl";
 import { stripeCheckoutAdapter } from "@/src/server/integrations/adapters/stripeCheckoutAdapter";
 
 const log = createLogger("CheckoutAPI");
 
 export async function POST(request: NextRequest) {
   return runPublicPostJson(request, checkoutRequestSchema, async ({ requestId, data }) => {
-    const origin = request.headers.get("origin");
-
     try {
+      const appBaseUrl = resolveTrustedAppBaseUrl(request.headers.get("origin"));
       const { sessionId } = await stripeCheckoutAdapter.createCheckoutSession({
         tutorId: data.tutorId,
         tutorName: data.tutorName,
         rate: data.rate,
-        origin,
+        appBaseUrl,
       });
       return jsonWithRequestId({ sessionId }, requestId);
     } catch (err: unknown) {

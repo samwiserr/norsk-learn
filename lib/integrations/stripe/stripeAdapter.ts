@@ -10,7 +10,7 @@ export type CreateStripeCheckoutSessionArgs = {
   tutorId: string | number;
   tutorName?: string;
   rate: number;
-  origin: string | null;
+  appBaseUrl: string;
 };
 
 /**
@@ -28,9 +28,9 @@ export async function createStripeCheckoutSession(
     apiVersion: "2024-06-20",
   } as unknown as ConstructorParameters<typeof Stripe>[1]);
 
-  const { tutorId, tutorName, rate, origin } = args;
-  if (!origin) {
-    throw new Error("Missing request origin for Stripe success/cancel URLs");
+  const { tutorId, tutorName, rate, appBaseUrl } = args;
+  if (!appBaseUrl) {
+    throw new Error("Missing app base URL for Stripe success/cancel URLs");
   }
 
   const session = await stripe.checkout.sessions.create({
@@ -49,8 +49,8 @@ export async function createStripeCheckoutSession(
       },
     ],
     mode: "payment",
-    success_url: `${origin}/tutors?success=true&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}/tutors?canceled=true`,
+    success_url: `${appBaseUrl}/tutors?success=true&session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${appBaseUrl}/tutors?canceled=true`,
     metadata: {
       tutorId: String(tutorId),
     },

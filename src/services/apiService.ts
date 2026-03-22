@@ -32,6 +32,7 @@ import {
 import { z } from "zod";
 import { sessionSnapshotSchema } from "@/lib/contracts/sessionSync";
 import { Session, validateSession } from "@/lib/sessions";
+import { randomHexBytes } from "@/lib/secureRandom";
 import { getOrCreateDeviceId } from "@/src/utils/deviceId";
 import { getCurrentUser } from "@/lib/firebase/auth";
 
@@ -59,7 +60,7 @@ function createRequestId(): string {
   } catch {
     // ignore
   }
-  return `req_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+  return `req_${Date.now()}_${randomHexBytes(8)}`;
 }
 
 function withRequestIdHeaders(
