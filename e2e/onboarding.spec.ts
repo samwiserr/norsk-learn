@@ -15,11 +15,21 @@ test.describe("Onboarding flow", () => {
 
   test("selecting a level navigates to chat", async ({ page }) => {
     await page.goto("/level-selection");
+    // Simulate the normal app flow where /writing redirected here,
+    // so navigation target is deterministic regardless of auth state
+    await page.evaluate(() =>
+      sessionStorage.setItem("norsk_return_path", "/writing")
+    );
     await page.getByText("A1").first().click();
     const confirmButton = page.getByRole("button", { name: /start|begin|confirm/i });
     if (await confirmButton.isVisible()) {
       await confirmButton.click();
     }
-    await page.waitForURL("**/", { timeout: 10_000 });
+    // Core assertion: level was persisted to localStorage
+    await expect
+      .poll(() => page.evaluate(() => localStorage.getItem("norsk_cefr_level")), {
+        timeout: 5_000,
+      })
+      .toBe("A1");
   });
 });

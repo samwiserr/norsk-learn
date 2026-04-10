@@ -10,6 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       GEMINI_API_KEY: ci-placeholder
       NEXT_PUBLIC_SITE_URL: https://ci.local
       NEXT_PUBLIC_FIREBASE_API_KEY: ci-placeholder
