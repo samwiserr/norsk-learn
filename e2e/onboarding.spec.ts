@@ -26,10 +26,20 @@ test.describe("Onboarding flow", () => {
       await confirmButton.click();
     }
     // Core assertion: level was persisted to localStorage
+    // saveToLocalStorage JSON.stringifies values, so stored as '"A1"'
     await expect
-      .poll(() => page.evaluate(() => localStorage.getItem("norsk_cefr_level")), {
-        timeout: 5_000,
-      })
+      .poll(
+        () =>
+          page.evaluate(() => {
+            const raw = localStorage.getItem("norsk_cefr_level");
+            try {
+              return JSON.parse(raw ?? "null");
+            } catch {
+              return raw;
+            }
+          }),
+        { timeout: 5_000 }
+      )
       .toBe("A1");
   });
 });
