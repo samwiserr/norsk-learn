@@ -31,17 +31,6 @@ const baseSchema = {
   // Stripe Payments (optional in development; adapter will error if used without it)
   STRIPE_SECRET_KEY: z.string().default(''),
 
-  // Pronunciation Provider (optional in development; route will error if upstream missing)
-  PRONUNCIATION_SERVICE_URL: z.string().default(''),
-
-  // OpenAI Realtime
-  OPENAI_API_KEY: z.string().default(''),
-  OPENAI_REALTIME_MODEL: z.string().default('gpt-4o-realtime-preview-2024-12-17'),
-
-  // Azure Speech (browser SDK token minting)
-  AZURE_SPEECH_KEY: z.string().default(''),
-  AZURE_SPEECH_REGION: z.string().default(''),
-  AZURE_SPEECH_TOKEN_URL: z.string().optional(),
 };
 
 // Firebase Configuration - required in production, optional in development
@@ -133,12 +122,6 @@ function validateEnv() {
         FIREBASE_ADMIN_CLIENT_EMAIL: process.env.FIREBASE_ADMIN_CLIENT_EMAIL || '',
         FIREBASE_ADMIN_PRIVATE_KEY: process.env.FIREBASE_ADMIN_PRIVATE_KEY || '',
         STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY || '',
-        PRONUNCIATION_SERVICE_URL: process.env.PRONUNCIATION_SERVICE_URL || '',
-        OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',
-        OPENAI_REALTIME_MODEL: process.env.OPENAI_REALTIME_MODEL || 'gpt-4o-realtime-preview-2024-12-17',
-        AZURE_SPEECH_KEY: process.env.AZURE_SPEECH_KEY || '',
-        AZURE_SPEECH_REGION: process.env.AZURE_SPEECH_REGION || '',
-        AZURE_SPEECH_TOKEN_URL: process.env.AZURE_SPEECH_TOKEN_URL || undefined,
       });
     }
     throw error;
@@ -185,31 +168,10 @@ export const config = {
       privateKey: env.FIREBASE_ADMIN_PRIVATE_KEY,
     };
   },
-  get openai() {
-    const env = getEnv();
-    return {
-      apiKey: env.OPENAI_API_KEY,
-      realtimeModel: env.OPENAI_REALTIME_MODEL,
-    };
-  },
   get stripe() {
     const env = getEnv();
     return {
       secretKey: env.STRIPE_SECRET_KEY,
-    };
-  },
-  get pronunciation() {
-    const env = getEnv();
-    return {
-      serviceUrl: env.PRONUNCIATION_SERVICE_URL,
-    };
-  },
-  get azureSpeech() {
-    const env = getEnv();
-    return {
-      key: env.AZURE_SPEECH_KEY,
-      region: env.AZURE_SPEECH_REGION,
-      tokenUrl: env.AZURE_SPEECH_TOKEN_URL,
     };
   },
   get rateLimit() {

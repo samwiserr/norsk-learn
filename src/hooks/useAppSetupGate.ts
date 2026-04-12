@@ -10,9 +10,9 @@ import { SESSION_STORAGE_KEYS } from "@/lib/constants";
 /**
  * Redirects to language or level selection until the user has completed first-time setup.
  * - `dashboard`: same checks as the home dashboard (no return path stored).
- * - `writing` | `speaking`: stores RETURN_PATH so level selection can send the user back to that route.
+ * - `writing`: stores RETURN_PATH so level selection can send the user back to that route.
  */
-export type AppSetupGateMode = "dashboard" | "writing" | "speaking";
+export type AppSetupGateMode = "dashboard" | "writing";
 
 export function useAppSetupGate(mode: AppSetupGateMode): boolean {
   const router = useRouter();
@@ -29,8 +29,6 @@ export function useAppSetupGate(mode: AppSetupGateMode): boolean {
     if (!storedLevel || !isValidCEFRLevel(storedLevel)) {
       if (mode === "writing") {
         sessionStorage.setItem(SESSION_STORAGE_KEYS.RETURN_PATH, "/writing");
-      } else if (mode === "speaking") {
-        sessionStorage.setItem(SESSION_STORAGE_KEYS.RETURN_PATH, "/speaking");
       }
       router.push("/level-selection");
       return;

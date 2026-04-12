@@ -3,8 +3,5 @@ export * from "@/lib/contracts/errors";
 export * from "@/lib/contracts/initial-question";
 export * from "@/lib/contracts/conversation";
 export * from "@/lib/contracts/streaming";
-export * from "@/lib/contracts/realtime";
-export * from "@/lib/contracts/speech";
 export * from "@/lib/contracts/checkout";
-export * from "@/lib/contracts/pronunciation";
 export * from "@/lib/contracts/sessionSync";

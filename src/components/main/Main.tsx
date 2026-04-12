@@ -10,14 +10,14 @@ import ProgressBar from "@/src/components/ProgressBar";
 import { getTranslation } from "@/lib/languages";
 import AuthModal from "@/src/components/auth/AuthModal";
 import { AuthNudgeBanner } from "@/src/components/auth/AuthNudgeBanner";
-import { CUSTOM_EVENTS, SESSION_STORAGE_KEYS } from "@/lib/constants";
+import { CUSTOM_EVENTS } from "@/lib/constants";
 import type { ExerciseMode } from "@/lib/exercise-modes";
 import { MODE_LABELS } from "./mainUtils";
 import { MainChatHeader } from "./MainChatHeader";
 import { MainExerciseBar } from "./MainExerciseBar";
 import { MainMessageArea } from "./MainMessageArea";
 import { MainComposer } from "./MainComposer";
-import { Button } from "@/src/components/ui/button";
+
 
 interface MainProps {
   onMenuClick?: () => void;
@@ -50,7 +50,6 @@ const Main = ({ onMenuClick }: MainProps) => {
   const [atBottom, setAtBottom] = useState(true);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showAuthNudge, setShowAuthNudge] = useState(false);
-  const [speakingFallbackMsg, setSpeakingFallbackMsg] = useState<string | null>(null);
   const [summaryDismissedAt, setSummaryDismissedAt] = useState(0);
 
   const messages = activeSession?.messages ?? [];
@@ -76,14 +75,6 @@ const Main = ({ onMenuClick }: MainProps) => {
       window.removeEventListener(CUSTOM_EVENTS.AUTH_REQUIRED, handleAuthRequired);
       window.removeEventListener(CUSTOM_EVENTS.AUTH_NUDGE, handleAuthNudge);
     };
-  }, []);
-
-  useEffect(() => {
-    const msg = sessionStorage.getItem(SESSION_STORAGE_KEYS.SPEAKING_FALLBACK_NOTICE);
-    if (msg) {
-      sessionStorage.removeItem(SESSION_STORAGE_KEYS.SPEAKING_FALLBACK_NOTICE);
-      setSpeakingFallbackMsg(msg);
-    }
   }, []);
 
   const handleAtBottomChange = useCallback(
@@ -159,18 +150,6 @@ const Main = ({ onMenuClick }: MainProps) => {
           dismissLabel={t("authNudgeDismiss")}
           onDismiss={() => setShowAuthNudge(false)}
         />
-      )}
-
-      {speakingFallbackMsg && (
-        <div
-          className="mx-3 mt-3 flex flex-col gap-2 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm sm:mx-4 sm:flex-row sm:items-center sm:justify-between"
-          role="status"
-        >
-          <p className="text-foreground">{speakingFallbackMsg}</p>
-          <Button type="button" variant="ghost" size="sm" onClick={() => setSpeakingFallbackMsg(null)}>
-            {t("progressionDismiss")}
-          </Button>
-        </div>
       )}
 
       {exerciseModeLabel && (

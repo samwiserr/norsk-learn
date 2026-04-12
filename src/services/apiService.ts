@@ -21,14 +21,6 @@ import {
   type TutorConversationResponse,
 } from "@/lib/contracts/conversation";
 import { sseEventSchema } from "@/lib/contracts/streaming";
-import {
-  openaiRealtimeSuccessSchema,
-  type OpenaiRealtimeSuccess,
-} from "@/lib/contracts/realtime";
-import {
-  azureSpeechTokenSuccessSchema,
-  type AzureSpeechTokenSuccess,
-} from "@/lib/contracts/speech";
 import { z } from "zod";
 import { sessionSnapshotSchema } from "@/lib/contracts/sessionSync";
 import { Session, validateSession } from "@/lib/sessions";
@@ -235,88 +227,6 @@ export class ApiService {
     } catch (error) {
       log.error("sendMessage failed after retries", error);
       reportErrorToSentry(error as Error | AppError, language);
-      throw error;
-    }
-  }
-
-  /**
-   * Mint an OpenAI Realtime session via POST /api/openai-realtime.
-   * This keeps token/session creation details out of UI hooks.
-   */
-  static async mintOpenaiRealtimeSession(
-    args: { model?: string; modalities?: string[] } = {}
-  ): Promise<OpenaiRealtimeSuccess> {
-    const requestId = createRequestId();
-    log.info("mintOpenaiRealtimeSession called", {
-      model: args.model,
-      hasModalities: Array.isArray(args.modalities),
-    });
-
-    try {
-      const response = await fetch("/api/openai-realtime", {
-        method: "POST",
-        headers: withRequestIdHeaders(requestId, {
-          "Content-Type": "application/json",
-        }),
-        body: JSON.stringify(args),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        log.error("OpenAI Realtime API error", { status: response.status, errorData });
-        throw new AppError(
-          (errorData as { type?: ErrorType }).type || ErrorType.API,
-          (errorData as { error?: string }).error || "Request failed",
-          (errorData as { code?: string }).code,
-          (errorData as { retryable?: boolean }).retryable ?? response.status >= 500
-        );
-      }
-
-      const data: unknown = await response.json();
-      return parseResponseBody(
-        openaiRealtimeSuccessSchema,
-        data,
-        "ApiService.mintOpenaiRealtimeSession"
-      );
-    } catch (error) {
-      // language is unknown here; report without language context.
-      reportErrorToSentry(error as Error | AppError);
-      throw error;
-    }
-  }
-
-  /**
-   * Mint an Azure Speech recognition token via GET /api/azure-speech-token.
-   */
-  static async getAzureSpeechToken(): Promise<AzureSpeechTokenSuccess> {
-    const requestId = createRequestId();
-    log.info("getAzureSpeechToken called");
-
-    try {
-      const response = await fetch("/api/azure-speech-token", {
-        method: "GET",
-        headers: withRequestIdHeaders(requestId, {}),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        log.error("Azure Speech API error", { status: response.status, errorData });
-        throw new AppError(
-          (errorData as { type?: ErrorType }).type || ErrorType.API,
-          (errorData as { error?: string }).error || "Request failed",
-          (errorData as { code?: string }).code,
-          (errorData as { retryable?: boolean }).retryable ?? response.status >= 500
-        );
-      }
-
-      const data: unknown = await response.json();
-      return parseResponseBody(
-        azureSpeechTokenSuccessSchema,
-        data,
-        "ApiService.getAzureSpeechToken"
-      );
-    } catch (error) {
-      reportErrorToSentry(error as Error | AppError);
       throw error;
     }
   }

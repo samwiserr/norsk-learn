@@ -53,8 +53,6 @@ export const SESSION_STORAGE_KEYS = {
   RETURN_PATH: "norsk_return_path",
   /** Once per browser tab/session — avoid repeat AUTH_NUDGE events */
   AUTH_NUDGE_SHOWN: "norsk_auth_nudge_shown",
-  /** One-shot notice after redirect from failed voice session */
-  SPEAKING_FALLBACK_NOTICE: "norsk_speaking_fallback_notice",
 } as const;
 
 /**

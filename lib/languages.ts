@@ -104,16 +104,12 @@ export interface Translations {
   progressionBannerExercise: string;
   progressionReviewLevels: string;
   progressionDismiss: string;
-  speaking: string;
-  speakingDesc: string;
   writing: string;
   writingDesc: string;
   findTutor: string;
   findTutorDesc: string;
-  startSession: string;
   startChat: string;
   browseTutors: string;
-  newVoiceMode: string;
   footerCopyright: string;
   // Tutors page translations
   findNorwegianTutor: string;
@@ -138,8 +134,6 @@ export interface Translations {
   exerciseChooseModeSubtitle: string;
   exerciseChooseTopic: string;
   exerciseChooseGrammar: string;
-  /** Link when voice session fails — optional text practice */
-  speakingContinueInWriting: string;
 }
 
 const shared: Omit<
@@ -235,16 +229,12 @@ const shared: Omit<
     "Try a focused exercise from Writing to break through a plateau.",
   progressionReviewLevels: "Review levels",
   progressionDismiss: "Dismiss",
-  speaking: "Speaking",
-  speakingDesc: "Learn how to pronounce and speak with interactive learning.",
   writing: "Writing",
   writingDesc: "Practice writing and improve your grammar with our interactive tutor.",
   findTutor: "Find a Tutor",
   findTutorDesc: "Connect with native speakers and professional teachers for 1-on-1 lessons.",
-  startSession: "Start Session",
   startChat: "Start Chat",
   browseTutors: "Browse Tutors",
-  newVoiceMode: "New: Voice Mode is now available!",
   footerCopyright: "Norsk Tutor © 2026. Made with ❤️ for learning.",
   // Tutors page translations
   findNorwegianTutor: "Find a Norwegian Tutor",
@@ -269,7 +259,6 @@ const shared: Omit<
   exerciseChooseModeSubtitle: "Choose an exercise mode to get started",
   exerciseChooseTopic: "Choose a topic",
   exerciseChooseGrammar: "Choose a grammar focus",
-  speakingContinueInWriting: "Continue in text mode",
 };
 
 const translations: Record<LanguageCode, Translations> = {
@@ -375,17 +364,13 @@ const translations: Record<LanguageCode, Translations> = {
       "Prøv en målrettet øvelse under Skriving for å komme videre.",
     progressionReviewLevels: "Se nivåer",
     progressionDismiss: "Lukk",
-    speaking: "Snakking",
-    speakingDesc: "Lær hvordan du uttaler og snakker med interaktiv læring.",
-    writing: "Skriving",
+        writing: "Skriving",
     writingDesc: "Øv på skriving og forbedre grammatikken din med vår interaktive veileder.",
     findTutor: "Finn en veileder",
     findTutorDesc: "Koble deg til morsmålsbrukere og profesjonelle lærere for 1-til-1 leksjoner.",
-    startSession: "Start økt",
-    startChat: "Start chat",
+      startChat: "Start chat",
     browseTutors: "Se veiledere",
-    newVoiceMode: "Nyhet: Talemodus er nå tilgjengelig!",
-    footerCopyright: "Norsk Tutor © 2026. Laget med ❤️ for læring.",
+      footerCopyright: "Norsk Tutor © 2026. Laget med ❤️ for læring.",
     // Tutors page translations
     findNorwegianTutor: "Finn en norsk veileder",
     bookLessons: "Bestill 1-til-1 leksjoner med morsmålsbrukere og sertifiserte lærere.",
@@ -409,8 +394,7 @@ const translations: Record<LanguageCode, Translations> = {
     exerciseChooseModeSubtitle: "Velg en øvelsesmodus for å komme i gang",
     exerciseChooseTopic: "Velg et tema",
     exerciseChooseGrammar: "Velg grammatikkfokus",
-    speakingContinueInWriting: "Fortsett i tekstmodus",
-  },
+    },
   de: {
     welcomeTitle: "Willkommen beim Norwegischlernen!",
     selectLevelSubtitle: "Wählen Sie Ihr aktuelles GER-Niveau, um zu beginnen",
@@ -503,17 +487,13 @@ const translations: Record<LanguageCode, Translations> = {
       "Try a focused exercise from Writing to break through a plateau.",
     progressionReviewLevels: "Review levels",
     progressionDismiss: "Dismiss",
-    speaking: "Sprechen",
-    speakingDesc: "Lernen Sie die Aussprache und das Sprechen durch interaktives Lernen.",
-    writing: "Schreiben",
+        writing: "Schreiben",
     writingDesc: "Üben Sie das Schreiben und verbessern Sie Ihre Grammatik mit unserem interaktiven Tutor.",
     findTutor: "Tutor finden",
     findTutorDesc: "Vernetzen Sie sich mit Muttersprachlern und professionellen Lehrern für Einzelunterricht.",
-    startSession: "Sitzung starten",
-    startChat: "Chat starten",
+      startChat: "Chat starten",
     browseTutors: "Tutoren durchsuchen",
-    newVoiceMode: "Neu: Der Sprachmodus ist jetzt verfügbar!",
-    footerCopyright: "Norsk Tutor © 2026. Mit ❤️ zum Lernen gemacht.",
+      footerCopyright: "Norsk Tutor © 2026. Mit ❤️ zum Lernen gemacht.",
     // Tutors page translations
     findNorwegianTutor: "Norwegisch-Tutor finden",
     bookLessons: "Buchen Sie Einzelunterricht bei Muttersprachlern und zertifizierten Lehrern.",
@@ -537,8 +517,7 @@ const translations: Record<LanguageCode, Translations> = {
     exerciseChooseModeSubtitle: "Wählen Sie einen Übungsmodus, um zu beginnen",
     exerciseChooseTopic: "Wählen Sie ein Thema",
     exerciseChooseGrammar: "Wählen Sie einen Grammatikschwerpunkt",
-    speakingContinueInWriting: "Im Textmodus fortfahren",
-  },
+    },
   fr: {
     welcomeTitle: "Bienvenue à l'apprentissage du norvégien !",
     selectLevelSubtitle:
@@ -632,17 +611,13 @@ const translations: Record<LanguageCode, Translations> = {
       "Try a focused exercise from Writing to break through a plateau.",
     progressionReviewLevels: "Review levels",
     progressionDismiss: "Dismiss",
-    speaking: "Parler",
-    speakingDesc: "Apprenez à prononcer et à parler avec l'apprentissage interactif.",
-    writing: "Écrire",
+        writing: "Écrire",
     writingDesc: "Pratiquez l'écriture et améliorez votre grammaire avec notre tuteur interactif.",
     findTutor: "Trouver un tuteur",
     findTutorDesc: "Connectez-vous avec des locuteurs natifs et des professeurs professionnels pour des cours particuliers.",
-    startSession: "Commencer la session",
-    startChat: "Commencer le chat",
+      startChat: "Commencer le chat",
     browseTutors: "Parcourir les tuteurs",
-    newVoiceMode: "Nouveau : le mode vocal est maintenant disponible !",
-    footerCopyright: "Norsk Tutor © 2026. Fait avec ❤️ pour l'apprentissage.",
+      footerCopyright: "Norsk Tutor © 2026. Fait avec ❤️ pour l'apprentissage.",
     // Tutors page translations
     findNorwegianTutor: "Trouver un tuteur de norvégien",
     bookLessons: "Réservez des cours particuliers avec des locuteurs natifs et des professeurs certifiés.",
@@ -666,8 +641,7 @@ const translations: Record<LanguageCode, Translations> = {
     exerciseChooseModeSubtitle: "Choisissez un mode d'exercice pour commencer",
     exerciseChooseTopic: "Choisissez un sujet",
     exerciseChooseGrammar: "Choisissez un objectif grammatical",
-    speakingContinueInWriting: "Continuer en mode texte",
-  },
+    },
   es: {
     welcomeTitle: "¡Bienvenido al aprendizaje de noruego!",
     selectLevelSubtitle:
@@ -761,17 +735,13 @@ const translations: Record<LanguageCode, Translations> = {
       "Try a focused exercise from Writing to break through a plateau.",
     progressionReviewLevels: "Review levels",
     progressionDismiss: "Dismiss",
-    speaking: "Hablar",
-    speakingDesc: "Aprende a pronunciar y hablar con el aprendizaje interactivo.",
-    writing: "Escribir",
+        writing: "Escribir",
     writingDesc: "Practica la escritura y mejora tu gramática con nuestro tutor interactivo.",
     findTutor: "Encontrar un tutor",
     findTutorDesc: "Conéctate con hablantes nativos y profesores profesionales para lecciones 1 a 1.",
-    startSession: "Iniciar sesión",
-    startChat: "Iniciar chat",
+      startChat: "Iniciar chat",
     browseTutors: "Explorar tutores",
-    newVoiceMode: "¡Nuevo: El modo de voz ya está disponible!",
-    footerCopyright: "Norsk Tutor © 2026. Hecho con ❤️ para aprender.",
+      footerCopyright: "Norsk Tutor © 2026. Hecho con ❤️ para aprender.",
     // Tutors page translations
     findNorwegianTutor: "Encontrar un tutor de noruego",
     bookLessons: "Reserva lecciones 1 a 1 con hablantes nativos y profesores certificados.",
@@ -795,8 +765,7 @@ const translations: Record<LanguageCode, Translations> = {
     exerciseChooseModeSubtitle: "Elige un modo de ejercicio para empezar",
     exerciseChooseTopic: "Elige un tema",
     exerciseChooseGrammar: "Elige un enfoque gramatical",
-    speakingContinueInWriting: "Continuar en modo texto",
-  },
+    },
   it: {
     welcomeTitle: "Benvenuti all'apprendimento del norvegese!",
     selectLevelSubtitle: "Seleziona il tuo livello QCER attuale per iniziare",
@@ -887,17 +856,13 @@ const translations: Record<LanguageCode, Translations> = {
       "Try a focused exercise from Writing to break through a plateau.",
     progressionReviewLevels: "Review levels",
     progressionDismiss: "Dismiss",
-    speaking: "Parlare",
-    speakingDesc: "Impara a pronunciare e parlare con l'apprendimento interattivo.",
-    writing: "Scrivere",
+        writing: "Scrivere",
     writingDesc: "Esercitati a scrivere e migliora la tua grammatica con il nostro tutor interattivo.",
     findTutor: "Trova un tutor",
     findTutorDesc: "Connettiti con madrelingua e insegnanti professionisti per lezioni individuali.",
-    startSession: "Inizia sessione",
-    startChat: "Inizia chat",
+      startChat: "Inizia chat",
     browseTutors: "Sfoglia tutor",
-    newVoiceMode: "Novità: la modalità vocale è ora disponibile!",
-    footerCopyright: "Norsk Tutor © 2026. Realizzato con ❤️ per l'apprendimento.",
+      footerCopyright: "Norsk Tutor © 2026. Realizzato con ❤️ per l'apprendimento.",
     // Tutors page translations
     findNorwegianTutor: "Trova un tutor di norvegese",
     bookLessons: "Prenota lezioni individuali con madrelingua e insegnanti certificati.",
@@ -921,8 +886,7 @@ const translations: Record<LanguageCode, Translations> = {
     exerciseChooseModeSubtitle: "Scegli una modalità di esercizio per iniziare",
     exerciseChooseTopic: "Scegli un argomento",
     exerciseChooseGrammar: "Scegli un focus grammaticale",
-    speakingContinueInWriting: "Continua in modalità testo",
-  },
+    },
   pt: {
     welcomeTitle: "Bem-vindo ao aprendizado de norueguês!",
     selectLevelSubtitle: "Selecione seu nível CEFR atual para começar",
@@ -1014,17 +978,13 @@ const translations: Record<LanguageCode, Translations> = {
       "Try a focused exercise from Writing to break through a plateau.",
     progressionReviewLevels: "Review levels",
     progressionDismiss: "Dismiss",
-    speaking: "Falar",
-    speakingDesc: "Aprenda a pronunciar e falar com o aprendizado interativo.",
-    writing: "Escrever",
+        writing: "Escrever",
     writingDesc: "Pratique a escrita e melhore sua gramática com nosso tutor interativo.",
     findTutor: "Encontrar um tutor",
     findTutorDesc: "Conecte-se com falantes nativos e professores profissionais para aulas individuais.",
-    startSession: "Iniciar sessão",
-    startChat: "Iniciar chat",
+      startChat: "Iniciar chat",
     browseTutors: "Procurar tutores",
-    newVoiceMode: "Novo: O modo de voz já está disponível!",
-    footerCopyright: "Norsk Tutor © 2026. Feito com ❤️ para aprender.",
+      footerCopyright: "Norsk Tutor © 2026. Feito com ❤️ para aprender.",
     // Tutors page translations
     findNorwegianTutor: "Encontrar um tutor de norueguês",
     bookLessons: "Reserve aulas individuais com falantes nativos e professores certificados.",
@@ -1048,8 +1008,7 @@ const translations: Record<LanguageCode, Translations> = {
     exerciseChooseModeSubtitle: "Escolha um modo de exercício para começar",
     exerciseChooseTopic: "Escolha um tópico",
     exerciseChooseGrammar: "Escolha um foco gramatical",
-    speakingContinueInWriting: "Continuar no modo texto",
-  },
+    },
   nl: {
     welcomeTitle: "Welkom bij Noors leren!",
     selectLevelSubtitle: "Selecteer uw huidige CEFR-niveau om te beginnen",
@@ -1141,17 +1100,13 @@ const translations: Record<LanguageCode, Translations> = {
       "Try a focused exercise from Writing to break through a plateau.",
     progressionReviewLevels: "Review levels",
     progressionDismiss: "Dismiss",
-    speaking: "Spreken",
-    speakingDesc: "Leer uitspraak en spreken door interactief leren.",
-    writing: "Schrijven",
+        writing: "Schrijven",
     writingDesc: "Oefen schrijven en verbeter uw grammatica met onze interactieve tutor.",
     findTutor: "Vind een tutor",
     findTutorDesc: "Maak contact met moedertaalsprekers en professionele docenten voor 1-op-1 lessen.",
-    startSession: "Sessie starten",
-    startChat: "Chat starten",
+      startChat: "Chat starten",
     browseTutors: "Tutors zoeken",
-    newVoiceMode: "Nieuw: De spraakmodus is nu beschikbaar!",
-    footerCopyright: "Norsk Tutor © 2026. Gemaakt met ❤️ om te leren.",
+      footerCopyright: "Norsk Tutor © 2026. Gemaakt met ❤️ om te leren.",
     // Tutors page translations
     findNorwegianTutor: "Vind een Noorse tutor",
     bookLessons: "Boek 1-op-1 lessen met moedertaalsprekers en gecertificeerde docenten.",
@@ -1175,8 +1130,7 @@ const translations: Record<LanguageCode, Translations> = {
     exerciseChooseModeSubtitle: "Kies een oefenmodus om te beginnen",
     exerciseChooseTopic: "Kies een onderwerp",
     exerciseChooseGrammar: "Kies een grammaticale focus",
-    speakingContinueInWriting: "Ga verder in tekstmodus",
-  },
+    },
   sv: {
     welcomeTitle: "Välkommen till norsk inlärning!",
     selectLevelSubtitle: "Välj din nuvarande CEFR-nivå för att börja",
@@ -1268,17 +1222,13 @@ const translations: Record<LanguageCode, Translations> = {
       "Try a focused exercise from Writing to break through a plateau.",
     progressionReviewLevels: "Review levels",
     progressionDismiss: "Dismiss",
-    speaking: "Tala",
-    speakingDesc: "Lär dig uttal och att tala genom interaktiv inlärning.",
-    writing: "Skriva",
+        writing: "Skriva",
     writingDesc: "Öva på att skriva och förbättra din grammatik med vår interaktiva handledare.",
     findTutor: "Hitta en handledare",
     findTutorDesc: "Få kontakt med modersmålstalare och professionella lärare för 1-till-1-lektioner.",
-    startSession: "Starta session",
-    startChat: "Starta chatt",
+      startChat: "Starta chatt",
     browseTutors: "Bläddra bland handledare",
-    newVoiceMode: "Nytt: Röstläge är nu tillgängligt!",
-    footerCopyright: "Norsk Tutor © 2026. Gjord med ❤️ för lärande.",
+      footerCopyright: "Norsk Tutor © 2026. Gjord med ❤️ för lärande.",
     // Tutors page translations
     findNorwegianTutor: "Hitta en norsk handledare",
     bookLessons: "Boka 1-till-1-lektioner med modersmålstalare och certifierade lärare.",
@@ -1302,8 +1252,7 @@ const translations: Record<LanguageCode, Translations> = {
     exerciseChooseModeSubtitle: "Välj ett övningsläge för att komma igång",
     exerciseChooseTopic: "Välj ett ämne",
     exerciseChooseGrammar: "Välj grammatikfokus",
-    speakingContinueInWriting: "Fortsätt i textläge",
-  },
+    },
   da: {
     welcomeTitle: "Velkommen til norsk læring!",
     selectLevelSubtitle: "Vælg dit nuværende CEFR-niveau for at begynde",
@@ -1395,17 +1344,13 @@ const translations: Record<LanguageCode, Translations> = {
       "Try a focused exercise from Writing to break through a plateau.",
     progressionReviewLevels: "Review levels",
     progressionDismiss: "Dismiss",
-    speaking: "Tale",
-    speakingDesc: "Lær udtale og tale gennem interaktiv læring.",
-    writing: "Skrivning",
+        writing: "Skrivning",
     writingDesc: "Øv dig i at skrive og forbedre din grammatik med vores interaktive tutor.",
     findTutor: "Find en tutor",
     findTutorDesc: "Få forbindelse med modersmålstalende og professionelle lærere til 1-til-1-undervisning.",
-    startSession: "Start session",
-    startChat: "Start chat",
+      startChat: "Start chat",
     browseTutors: "Gennemse tutorer",
-    newVoiceMode: "Ny: Stemmetilstand er nu tilgængelig!",
-    footerCopyright: "Norsk Tutor © 2026. Lavet med ❤️ til læring.",
+      footerCopyright: "Norsk Tutor © 2026. Lavet med ❤️ til læring.",
     // Tutors page translations
     findNorwegianTutor: "Find en norsk tutor",
     bookLessons: "Book 1-til-1-undervisning med modersmålstalende og certificerede lærere.",
@@ -1429,8 +1374,7 @@ const translations: Record<LanguageCode, Translations> = {
     exerciseChooseModeSubtitle: "Vælg en øvelsestilstand for at komme i gang",
     exerciseChooseTopic: "Vælg et emne",
     exerciseChooseGrammar: "Vælg grammatikfokus",
-    speakingContinueInWriting: "Fortsæt i teksttilstand",
-  },
+    },
   fi: {
     welcomeTitle: "Tervetuloa norjan oppimiseen!",
     selectLevelSubtitle: "Valitse nykyinen CEFR-tasosi aloittaaksesi",
@@ -1522,17 +1466,13 @@ const translations: Record<LanguageCode, Translations> = {
       "Try a focused exercise from Writing to break through a plateau.",
     progressionReviewLevels: "Review levels",
     progressionDismiss: "Dismiss",
-    speaking: "Puhuminen",
-    speakingDesc: "Opi ääntämistä ja puhumista interaktiivisen oppimisen avulla.",
-    writing: "Kirjoittaminen",
+        writing: "Kirjoittaminen",
     writingDesc: "Harjoittele kirjoittamista ja paranna kielioppiasi interaktiivisen ohjaajamme avulla.",
     findTutor: "Etsi ohjaaja",
     findTutorDesc: "Ota yhteyttä äidinkielisiin puhujiin ja ammattitaitoisiin opettajiin yksityistunneille.",
-    startSession: "Aloita istunto",
-    startChat: "Aloita chat",
+      startChat: "Aloita chat",
     browseTutors: "Selaa ohjaajia",
-    newVoiceMode: "Uutta: Äänitila on nyt saatavilla!",
-    footerCopyright: "Norsk Tutor © 2026. Tehty ❤️:lla oppimista varten.",
+      footerCopyright: "Norsk Tutor © 2026. Tehty ❤️:lla oppimista varten.",
     // Tutors page translations
     findNorwegianTutor: "Etsi norjan ohjaaja",
     bookLessons: "Varaa yksityistunteja äidinkielisten puhujien ja sertifioitujen opettajien kanssa.",
@@ -1556,8 +1496,7 @@ const translations: Record<LanguageCode, Translations> = {
     exerciseChooseModeSubtitle: "Valitse harjoitustila aloittaaksesi",
     exerciseChooseTopic: "Valitse aihe",
     exerciseChooseGrammar: "Valitse kielioppifokus",
-    speakingContinueInWriting: "Jatka tekstitilassa",
-  },
+    },
   pl: {
     welcomeTitle: "Witamy w nauce norweskiego!",
     selectLevelSubtitle: "Wybierz swój obecny poziom CEFR, aby rozpocząć",
@@ -1649,17 +1588,13 @@ const translations: Record<LanguageCode, Translations> = {
       "Try a focused exercise from Writing to break through a plateau.",
     progressionReviewLevels: "Review levels",
     progressionDismiss: "Dismiss",
-    speaking: "Mówienie",
-    speakingDesc: "Naucz się wymowy i mówienia poprzez interaktywną naukę.",
-    writing: "Pisanie",
+        writing: "Pisanie",
     writingDesc: "Ćwicz pisanie i popraw swoją gramatykę z naszym interaktywnym korepetytorem.",
     findTutor: "Znajdź korepetytora",
     findTutorDesc: "Połącz się z native speakerami i profesjonalnymi nauczycielami na lekcje 1 na 1.",
-    startSession: "Rozpocznij sesję",
-    startChat: "Rozpocznij czat",
+      startChat: "Rozpocznij czat",
     browseTutors: "Przeglądaj korepetytorów",
-    newVoiceMode: "Nowość: Tryb głosowy jest już dostępny!",
-    footerCopyright: "Norsk Tutor © 2026. Stworzone z ❤️ do nauki.",
+      footerCopyright: "Norsk Tutor © 2026. Stworzone z ❤️ do nauki.",
     // Tutors page translations
     findNorwegianTutor: "Znajdź korepetytora norweskiego",
     bookLessons: "Zarezerwuj lekcje 1 na 1 z native speakerami i certyfikowanymi nauczycielami.",
@@ -1683,8 +1618,7 @@ const translations: Record<LanguageCode, Translations> = {
     exerciseChooseModeSubtitle: "Wybierz tryb ćwiczenia, aby rozpocząć",
     exerciseChooseTopic: "Wybierz temat",
     exerciseChooseGrammar: "Wybierz fokus gramatyczny",
-    speakingContinueInWriting: "Kontynuuj w trybie tekstowym",
-  },
+    },
   uk: {
     welcomeTitle: "Ласкаво просимо до вивчення норвезької!",
     selectLevelSubtitle: "Виберіть свій поточний рівень CEFR, щоб розпочати",
@@ -1776,17 +1710,13 @@ const translations: Record<LanguageCode, Translations> = {
       "Try a focused exercise from Writing to break through a plateau.",
     progressionReviewLevels: "Review levels",
     progressionDismiss: "Dismiss",
-    speaking: "Розмовна мова",
-    speakingDesc: "Вивчайте вимову та розмовну мову за допомогою інтерактивного навчання.",
-    writing: "Письмо",
+        writing: "Письмо",
     writingDesc: "Практикуйте письмо та покращуйте свою граматику за допомогою нашого інтерактивного репетитора.",
     findTutor: "Знайти репетитора",
     findTutorDesc: "Зв'яжіться з носіями мови та професійними викладачами для індивідуальних уроків.",
-    startSession: "Почати сесію",
-    startChat: "Почати чат",
+      startChat: "Почати чат",
     browseTutors: "Переглянути репетиторів",
-    newVoiceMode: "Нове: Голосовий режим тепер доступний!",
-    footerCopyright: "Norsk Tutor © 2026. Зроблено з ❤️ для навчання.",
+      footerCopyright: "Norsk Tutor © 2026. Зроблено з ❤️ для навчання.",
     // Tutors page translations
     findNorwegianTutor: "Знайти репетитора норвезької мови",
     bookLessons: "Забронюйте індивідуальні уроки з носіями мови та сертифікованими викладачами.",
@@ -1810,8 +1740,7 @@ const translations: Record<LanguageCode, Translations> = {
     exerciseChooseModeSubtitle: "Оберіть режим вправи, щоб почати",
     exerciseChooseTopic: "Оберіть тему",
     exerciseChooseGrammar: "Оберіть граматичний фокус",
-    speakingContinueInWriting: "Продовжити текстовим режимом",
-  },
+    },
 };
 
 export const isValidLanguageCode = (

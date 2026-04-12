@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Mic, PenLine, Users, Languages, ChevronDown, Settings, GraduationCap } from "lucide-react";
+import { PenLine, Users, Languages, ChevronDown, Settings, GraduationCap } from "lucide-react";
 import { getTranslation } from "@/lib/languages";
 import { useSessionContext } from "@/src/context/SessionContext";
 import { useLanguageContext } from "@/src/context/LanguageContext";
@@ -79,10 +79,6 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <div className="border-b border-primary/20 bg-primary/10 py-2.5 text-center text-sm font-medium text-primary">
-        {t("newVoiceMode")}
-      </div>
-
       <main className="z-10 flex flex-grow flex-col items-center px-6 pb-16 pt-12">
         <div className="w-full max-w-4xl px-4">
           <DashboardProgressionBanner cefrLevel={cefrLevel} language={language} />
@@ -94,16 +90,7 @@ export default function Dashboard() {
           <p className="text-base text-muted-foreground">{t("dashboardSubtitle")}</p>
         </div>
 
-        <div className="grid w-full max-w-4xl grid-cols-1 gap-6 px-4 md:grid-cols-3">
-          <DashboardActionCard
-            icon={<Mic className="h-6 w-6 text-white" />}
-            iconClassName="bg-purple-600"
-            title={t("speaking")}
-            description={t("speakingDesc")}
-            href="/speaking"
-            cta={t("startSession")}
-            ctaVariant="default"
-          />
+        <div className="grid w-full max-w-4xl grid-cols-1 gap-6 px-4 md:grid-cols-2">
           <DashboardActionCard
             icon={<PenLine className="h-6 w-6 text-white" />}
             iconClassName="bg-blue-500"

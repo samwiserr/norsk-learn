@@ -13,34 +13,22 @@ describe('config env validation', () => {
     jest.resetModules();
   });
 
-  it('allows blank OpenAI/Azure keys in development without crashing', () => {
+  it('allows blank optional keys in development without crashing', () => {
     process.env.NODE_ENV = 'development';
     process.env.GEMINI_API_KEY = 'dummy-gemini';
 
     const { config } = require('../config');
 
-    expect(config.openai.apiKey).toBe('');
-    expect(config.azureSpeech.key).toBe('');
-    expect(config.azureSpeech.region).toBe('');
+    expect(config.gemini.apiKey).toBe('dummy-gemini');
+    expect(config.stripe.secretKey).toBe('');
   });
 
-  it('reads provided OpenAI/Azure keys when set', () => {
+  it('reads provided Gemini key when set', () => {
     process.env.NODE_ENV = 'development';
-    process.env.GEMINI_API_KEY = 'dummy-gemini';
-    process.env.OPENAI_API_KEY = 'sk-openai';
-    process.env.OPENAI_REALTIME_MODEL = 'custom-model';
-    process.env.AZURE_SPEECH_KEY = 'azure-key';
-    process.env.AZURE_SPEECH_REGION = 'norwayeast';
-    process.env.AZURE_SPEECH_TOKEN_URL = 'https://custom/token';
+    process.env.GEMINI_API_KEY = 'real-gemini-key';
 
     const { config } = require('../config');
 
-    expect(config.openai.apiKey).toBe('sk-openai');
-    expect(config.openai.realtimeModel).toBe('custom-model');
-    expect(config.azureSpeech.key).toBe('azure-key');
-    expect(config.azureSpeech.region).toBe('norwayeast');
-    expect(config.azureSpeech.tokenUrl).toBe('https://custom/token');
+    expect(config.gemini.apiKey).toBe('real-gemini-key');
   });
 });
-
-

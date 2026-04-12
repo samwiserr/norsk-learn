@@ -9,7 +9,7 @@ import {
   ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
-import { Message, Session } from "@/lib/sessions";
+import { Session } from "@/lib/sessions";
 import { CEFRLevel, isValidCEFRLevel } from "@/lib/cefr";
 import { initializeProgress } from "@/lib/cefr-progress";
 import { useAuthCheck } from "@/src/hooks/useAuthCheck";
@@ -64,11 +64,6 @@ export interface SessionContextValue {
   retryLastMessage: () => void;
   exerciseScore: number;
   exerciseTurns: number;
-  /** Append a summarized voice practice turn to the active writing session */
-  recordSpeakingPractice: (
-    lines: { role: "user" | "assistant"; text: string }[],
-    pronunciation?: { accuracy: number; fluency: number; completeness: number },
-  ) => void;
 }
 
 const SessionContext = createContext<SessionContextValue>({} as SessionContextValue);
@@ -344,41 +339,6 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [state.lastUserInput, onSent]);
 
-  const recordSpeakingPractice = useCallback(
-    (
-      lines: { role: "user" | "assistant"; text: string }[],
-      pronunciation?: { accuracy: number; fluency: number; completeness: number },
-    ) => {
-      if (!activeSession || lines.length === 0) return;
-      const body = lines
-        .map((l) => `${l.role === "user" ? "You" : "Tutor"}: ${l.text}`)
-        .join("\n");
-      let extra = "";
-      if (
-        pronunciation &&
-        (pronunciation.accuracy > 0 || pronunciation.fluency > 0 || pronunciation.completeness > 0)
-      ) {
-        extra = `\n\nPronunciation — accuracy ${pronunciation.accuracy}% · fluency ${pronunciation.fluency}% · completeness ${pronunciation.completeness}%`;
-      }
-      const msg: Message = {
-        id: `msg_${Date.now()}_speaking`,
-        role: "assistant",
-        content: `Speaking practice\n\n${body}${extra}`,
-        timestamp: Date.now(),
-        source: "speaking",
-        pronunciation,
-      };
-      const nextMessages = [...activeSession.messages, msg];
-      const now = Date.now();
-      updateSession(activeSession.id, {
-        messages: nextMessages,
-        messageCount: nextMessages.length,
-        updatedAt: now,
-      });
-    },
-    [activeSession, updateSession],
-  );
-
   const newChat = useCallback(() => {
     if (!activeSession || !state.cefrLevel) return;
     const initial = initializeProgress(state.cefrLevel);
@@ -425,7 +385,6 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
     retryLastMessage,
     exerciseScore: state.exerciseScore,
     exerciseTurns: state.exerciseTurns,
-    recordSpeakingPractice,
   };
 
   return <SessionContext.Provider value={contextValue}>{children}</SessionContext.Provider>;
